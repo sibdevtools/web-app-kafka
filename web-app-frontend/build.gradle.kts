@@ -5,8 +5,8 @@ plugins {
 }
 
 node {
-  version.set(libs.versions.node.asProvider().get())
-  npmVersion.set(libs.versions.npm.get())
+  version.set("22.9.0")
+  npmVersion.set("10.8.3")
   download.set(true)
 }
 

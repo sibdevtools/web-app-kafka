@@ -187,5 +187,3 @@ user.gradle
 .settings/
 
 
-# npm
-/node_modules/

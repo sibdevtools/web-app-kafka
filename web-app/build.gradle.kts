@@ -8,18 +8,11 @@ plugins {
     alias(libs.plugins.spring.dependency.managment)
 }
 
-dependencyManagement {
-    imports {
-        mavenBom(libs.spring.boot.bom.map { it.toString() }.get())
-    }
-}
-
 dependencies {
     compileOnly("org.projectlombok:lombok")
     compileOnly("jakarta.servlet:jakarta.servlet-api")
 
     annotationProcessor("org.projectlombok:lombok")
-    annotationProcessor(libs.mapstruct)
 
     implementation("org.springframework:spring-aspects")
     implementation("org.springframework:spring-context")
@@ -29,26 +22,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-autoconfigure")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
-    implementation("org.springframework.data:spring-data-jpa")
-
-    implementation("org.flywaydb:flyway-core")
-
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-
-    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-
     implementation("jakarta.annotation:jakarta.annotation-api")
-    implementation("jakarta.persistence:jakarta.persistence-api")
 
-    implementation(libs.mapstruct)
-    implementation(libs.mapstruct.lombok)
-
-    implementation(libs.api.common)
-    implementation(libs.api.error)
-    implementation(libs.api.localization)
-    implementation(libs.api.web.app)
+    implementation(libs.bundles.service.api)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
@@ -64,6 +40,36 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
+val targetJavaVersion = (libs.versions.java.get()).toInt()
+val javaVersion = JavaVersion.toVersion(targetJavaVersion)
+
+java {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+    withSourcesJar()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:${libs.versions.spring.framework.get()}")
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    // If Javadoc is generated, this must be specified in that task too.
+    options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
@@ -74,7 +80,8 @@ tasks.register<Copy>("copyFrontendResources") {
 
     dependsOn(":web-app-frontend:build")
 
-    from(project(":web-app-frontend").file("build/out"))
+    val frontendBuildDir = layout.projectDirectory.dir("../web-app-frontend/build/out")
+    from(frontendBuildDir)
     into(layout.buildDirectory.dir("resources/main/web/app/kafka/static"))
 }
 
@@ -86,14 +93,6 @@ tasks.withType<ProcessResources> {
     filesMatching("**/application.properties") {
         expand("appVersion" to version)
     }
-}
-
-tasks.named<ProcessResources>("processResources") {
-    notCompatibleWithConfigurationCache("Uses objects that are not serializable with configuration cache.")
-}
-
-tasks.named<ProcessResources>("processTestResources") {
-    notCompatibleWithConfigurationCache("Uses objects that are not serializable with configuration cache.")
 }
 
 tasks.jar {

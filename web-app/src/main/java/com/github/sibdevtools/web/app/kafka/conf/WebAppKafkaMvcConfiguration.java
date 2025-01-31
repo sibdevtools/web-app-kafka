@@ -16,15 +16,15 @@ import org.springframework.web.servlet.resource.VersionResourceResolver;
 public class WebAppKafkaMvcConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/web/app/Kafka/ui/**")
-                .addResourceLocations("classpath:/web/app/Kafka/static/")
+        registry.addResourceHandler("/web/app/kafka/ui/**")
+                .addResourceLocations("classpath:/web/app/kafka/static/")
                 .resourceChain(true)
                 .addResolver(new VersionResourceResolver().addContentVersionStrategy("/**"));
     }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/web/app/Kafka/ui/")
-                .setViewName("forward:/web/app/Kafka/ui/index.html");
+        registry.addViewController("/web/app/kafka/ui/")
+                .setViewName("forward:/web/app/kafka/ui/index.html");
     }
 }
