@@ -15,6 +15,8 @@ web-app-api = "0.0.6"
 storage-embedded = "0.1.16"
 async-embedded = "0.0.10"
 
+kafka-client-service = "0.0.2"
+
 
 [libraries]
 common-api = { module = "com.github.sibdevtools:api-common", version.ref = "common-api" }
@@ -24,6 +26,7 @@ web-app-api = { module = "com.github.sibdevtools:api-web-app", version.ref = "we
 
 storage-embedded = { module = "com.github.sibdevtools:service-storage-embedded", version.ref = "storage-embedded" }
 async-embedded = { module = "com.github.sibdevtools:service-async-embedded", version.ref = "async-embedded" }
+kafka-client-service = { module = "com.github.sibdevtools:service-kafka-client", version.ref = "kafka-client-service" }
 
 [bundles]
 service-api = [
