@@ -26,5 +26,7 @@ public class WebAppKafkaMvcConfiguration implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/web/app/kafka/ui/")
                 .setViewName("forward:/web/app/kafka/ui/index.html");
+        registry.addViewController("/web/app/kafka/ui/v1/**")
+                .setViewName("forward:/web/app/kafka/ui/index.html");
     }
 }

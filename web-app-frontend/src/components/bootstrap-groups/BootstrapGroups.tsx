@@ -75,7 +75,7 @@ const BootstrapGroups: React.FC = () => {
               <ButtonGroup>
                 <Button
                   variant={'outline-success'}
-                  onClick={() => navigate(`${contextPath}bootstrap-group/add`)}
+                  onClick={() => navigate(`${contextPath}v1/bootstrap-group/add`)}
                   title={'Add'}
                 >
                   <PlusSignIcon />
@@ -98,7 +98,7 @@ const BootstrapGroups: React.FC = () => {
                 name: group.name,
                 actions: {
                   representation: <ActionButtons
-                    onEdit={() => navigate(`${contextPath}bootstrap-group/${group.id}/edit`)}
+                    onEdit={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/edit`)}
                     onDelete={() => doDeleteBootstrapGroup(group)}
                   />
                 }
