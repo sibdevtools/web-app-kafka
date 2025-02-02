@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import AceEditor from 'react-ace';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getTopics, RecordMetadataDto, sendMessage } from '../../api/bootstrap.group';
-import { contextPath } from '../../constant/common';
+import { contextPath, TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
 import { Loader } from '../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
 import { encode, encodeText, tryDecodeToText } from '../../utils/base64';
+import { loadSettings } from '../../settings/utils';
+
+import '../../constant/ace.imports'
 
 interface HeaderForm {
   key: string | null;
@@ -17,6 +21,7 @@ const MessagePublishing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { groupId } = useParams();
+  const settings = loadSettings();
   const [topics, setTopics] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState<boolean>(false);
@@ -41,6 +46,7 @@ const MessagePublishing: React.FC = () => {
 
   const [valueInputType, setValueInputType] = useState<'text' | 'file'>('text');
   const [valueView, setValueView] = useState<'base64' | 'raw'>('raw');
+  const [valueType, setValueType] = useState<TextType>('Text');
 
   useEffect(() => {
     fetchTopics();
@@ -394,13 +400,46 @@ const MessagePublishing: React.FC = () => {
                           <option value={'raw'}>Raw</option>
                         </Form.Select>
                       )}
+                      {valueView === 'raw' && (
+                        <Form.Select
+                          value={valueType}
+                          onChange={(e) => setValueType(e.target.value as TextType)}
+                        >
+                          {textTypes.map((type, i) => (
+                            <option key={i} value={type}>{type}</option>
+                          ))}
+                        </Form.Select>
+                      )}
                     </InputGroup>
                   </Row>
                   <Form.Group className={'mb-2'}>
                     {valueInputType === 'text' && (
-                      <Form.Control
+                      <AceEditor
+                        mode={valueView === 'base64' ? 'text' : textTypeAceModeMap.get(valueType) ?? 'text'}
+                        theme={settings['aceTheme'].value}
+                        name={`schema-representation`}
                         value={getViewRepresentation(valueView, value)}
-                        onChange={(e) => changeValue(e.target.value)}
+                        onChange={changeValue}
+                        className={`rounded border`}
+                        style={{
+                          resize: 'vertical',
+                          overflow: 'auto',
+                          height: '480px',
+                          minHeight: '200px',
+                        }}
+                        fontSize={14}
+                        width="100%"
+                        height="480px"
+                        showPrintMargin={true}
+                        showGutter={true}
+                        highlightActiveLine={true}
+                        wrapEnabled={true}
+                        setOptions={{
+                          showLineNumbers: true,
+                          wrap: true,
+                          useWorker: false,
+                        }}
+                        editorProps={{ $blockScrolling: true }}
                       />
                     )}
                     {valueInputType === 'file' && (
