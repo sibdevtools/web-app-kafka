@@ -9,6 +9,7 @@ import MessageConsuming from './components/message-consuming/MessageConsuming';
 import { contextPath } from './constant/common';
 import AddEditBootstrapGroup from './components/bootstrap-group/AddEditBootstrapGroup';
 import ApplicationLayout from './components/common/ApplicationLayout';
+import AddEditMessageTemplate from './components/message-template/AddEditMessageTemplate';
 
 const App: React.FC = () => {
   return (
@@ -28,10 +29,10 @@ const App: React.FC = () => {
             </Route>
             <Route path="message-templates" element={<MessageTemplates />} />
             <Route path="message-template">
-              {/*<Route path="add" element={<AddEditBootstrapGroup />} />*/}
+              <Route path="add" element={<AddEditMessageTemplate />} />
               <Route path={':templateId'}>
-                {/*<Route path="edit" element={<AddEditBootstrapGroup />} />
-                <Route path="consuming" element={<MessageConsuming />} />
+                <Route path="edit" element={<AddEditMessageTemplate />} />
+                {/* <Route path="consuming" element={<MessageConsuming />} />
                 <Route path="publishing" element={<MessagePublishing />} />*/}
               </Route>
             </Route>

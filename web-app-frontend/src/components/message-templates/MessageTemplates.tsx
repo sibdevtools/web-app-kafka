@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { deleteMessageTemplate, getAllMessageTemplates, MessageTemplateRs } from '../../api/message.templates';
+import { deleteMessageTemplate, getAllMessageTemplates, MessageTemplateShortRs } from '../../api/message.templates';
 import { Alert, Button, ButtonGroup, Col, Container, Row } from 'react-bootstrap';
 import { contextPath } from '../../constant/common';
 import { PlusSignIcon } from 'hugeicons-react';
@@ -9,7 +9,7 @@ import { ActionButtons } from './ActionButtons';
 
 const MessageTemplates: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  const [templates, setTemplates] = useState<MessageTemplateRs[]>([]);
+  const [templates, setTemplates] = useState<MessageTemplateShortRs[]>([]);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -35,7 +35,7 @@ const MessageTemplates: React.FC = () => {
     }
   };
 
-  const doDeleteMessageTemplate = async (template: MessageTemplateRs) => {
+  const doDeleteMessageTemplate = async (template: MessageTemplateShortRs) => {
     if (!window.confirm('Are you sure?')) {
       return;
     }
