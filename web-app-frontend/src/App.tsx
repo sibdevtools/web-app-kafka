@@ -5,7 +5,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import BootstrapGroups from './components/bootstrap-groups/BootstrapGroups';
 import MessagePublishing from './components/MessagePublishing';
 import MessageTemplates from './components/MessageTemplates';
-import MessageConsuming from './components/MessageConsuming';
+import MessageConsuming from './components/message-consuming/MessageConsuming';
 import { contextPath } from './constant/common';
 import AddEditBootstrapGroup from './components/bootstrap-group/AddEditBootstrapGroup';
 import ApplicationLayout from './components/common/ApplicationLayout';
