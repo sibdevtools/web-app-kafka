@@ -10,6 +10,7 @@ import { encode, encodeText, tryDecodeToText } from '../../utils/base64';
 import { loadSettings } from '../../settings/utils';
 
 import '../../constant/ace.imports'
+import { MessagePublishedModal } from './MessagePublishedModal';
 
 interface HeaderForm {
   key: string | null;
@@ -41,6 +42,7 @@ const MessagePublishing: React.FC = () => {
   ]);
 
   const [record, setRecord] = useState<RecordMetadataDto | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const [keyView, setKeyView] = useState<'base64' | 'raw'>('raw');
 
@@ -113,6 +115,7 @@ const MessagePublishing: React.FC = () => {
       if (rs.data.success) {
         let record = rs.data.body;
         setRecord(record);
+        setShowModal(true);
       } else {
         setError('Failed to send message');
         return;
@@ -469,32 +472,13 @@ const MessagePublishing: React.FC = () => {
           </Form>
         </Col>
       </Row>
+
       {record && (
-        <Col md={{ span: 10, offset: 1 }}>
-          <Row className={'mb-2'}>
-            <Row><h2>Message Published</h2></Row>
-            <Row>
-              <Col md={2}>Partition:</Col>
-              <Col md={10}>{record.partition}</Col>
-            </Row>
-            <Row>
-              <Col md={2}>Offset:</Col>
-              <Col md={10}>{record.offset}</Col>
-            </Row>
-            <Row>
-              <Col md={2}>Timestamp:</Col>
-              <Col md={10}>{record.timestamp}</Col>
-            </Row>
-            <Row>
-              <Col md={2}>Serialized key size:</Col>
-              <Col md={10}>{record.serializedKeySize}</Col>
-            </Row>
-            <Row>
-              <Col md={2}>Serialized value size:</Col>
-              <Col md={10}>{record.serializedValueSize}</Col>
-            </Row>
-          </Row>
-        </Col>
+        <MessagePublishedModal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          recordMetadata={record}
+        />
       )}
     </Container>
   );
