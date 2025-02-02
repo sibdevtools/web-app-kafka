@@ -87,6 +87,7 @@ const BootstrapGroups: React.FC = () => {
             columns={[
               { key: 'code', label: 'Code' },
               { key: 'name', label: 'Name' },
+              { key: 'servers', label: 'Bootstrap Servers' },
               { key: 'actions', label: 'Actions' },
             ]}
             data={groups.map(group => {
@@ -96,6 +97,12 @@ const BootstrapGroups: React.FC = () => {
                   value: group.code
                 },
                 name: group.name,
+                servers: {
+                  representation: <ul>
+                    {group.bootstrapServers.map(it => (<li key={it}>{it}</li>))}
+                  </ul>,
+                  value: group.bootstrapServers.join(', ')
+                },
                 actions: {
                   representation: <ActionButtons
                     onEdit={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/edit`)}
@@ -106,11 +113,12 @@ const BootstrapGroups: React.FC = () => {
               };
             })}
             sortableColumns={['code', 'name']}
-            filterableColumns={['code', 'name']}
+            filterableColumns={['code', 'name', 'servers']}
             styleProps={{
               centerHeaders: true,
               textCenterValues: true,
             }}
+            responsive={true}
           />
         </Col>
       </Row>

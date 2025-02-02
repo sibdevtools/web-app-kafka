@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getTopics } from '../../api/bootstrap.group';
 import { contextPath } from '../../constant/common';
 import { Loader } from '../common/Loader';
-import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, Search01Icon } from 'hugeicons-react';
 import MessageConsumingResult, { MessageConsumingResultHandle } from './MessageConsumingResult';
 
@@ -136,12 +136,15 @@ const MessageConsuming: React.FC = () => {
                   <Form.Label>Max Timeout</Form.Label>
                 </Col>
                 <Col md={9}>
-                  <Form.Control
-                    value={maxTimeout}
-                    type={'number'}
-                    min={1}
-                    onChange={(e) => setMaxTimeout(Number(e.target.value))}
-                  />
+                  <InputGroup>
+                    <Form.Control
+                      value={maxTimeout}
+                      type={'number'}
+                      min={1}
+                      onChange={(e) => setMaxTimeout(Number(e.target.value))}
+                    />
+                    <InputGroup.Text>ms</InputGroup.Text>
+                  </InputGroup>
                 </Col>
               </Row>
             </Form.Group>

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import BootstrapGroupForm from './BootstrapGroupForm';
+import BootstrapGroupForm, { BootstrapGroupFormHandle } from './BootstrapGroupForm';
 import { createBootstrapGroup, getBootstrapGroup, updateBootstrapGroup } from '../../api/bootstrap.group';
 import { contextPath } from '../../constant/common';
 
@@ -8,11 +8,7 @@ const AddEditBootstrapGroup: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { groupId } = useParams();
-
-  const [code, setCode] = useState('');
-  const [name, setName] = useState('');
-  const [maxTimeout, setMaxTimeout] = useState<number>(6000);
-  const [bootstrapServers, setBootstrapServers] = useState<string[]>([]);
+  const bootstrapGroupFormRef = useRef<BootstrapGroupFormHandle>(null);
 
   useEffect(() => {
     if (groupId) {
@@ -31,10 +27,7 @@ const AddEditBootstrapGroup: React.FC = () => {
     try {
       const response = await getBootstrapGroup(+groupId);
       const body = response.data.body;
-      setCode(body.code);
-      setName(body.name);
-      setMaxTimeout(body.maxTimeout);
-      setBootstrapServers(body.bootstrapServers);
+      bootstrapGroupFormRef?.current?.changeFormValues(body);
     } catch (error) {
       console.error('Failed to fetch bootstrap group:', error);
     } finally {
@@ -45,12 +38,10 @@ const AddEditBootstrapGroup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const bootstrapGroupData = {
-        code: code,
-        name: name,
-        maxTimeout: maxTimeout,
-        bootstrapServers: bootstrapServers,
-      };
+      const bootstrapGroupData = bootstrapGroupFormRef?.current?.getBootstrapGroupRq();
+      if (!bootstrapGroupData) {
+        return
+      }
       if (groupId) {
         await updateBootstrapGroup(+groupId, bootstrapGroupData);
       } else {
@@ -68,15 +59,8 @@ const AddEditBootstrapGroup: React.FC = () => {
 
   return (
     <BootstrapGroupForm
+      ref={bootstrapGroupFormRef}
       loading={loading}
-      code={code}
-      name={name}
-      maxTimeout={maxTimeout}
-      bootstrapServers={bootstrapServers}
-      setCode={setCode}
-      setName={setName}
-      setMaxTimeout={setMaxTimeout}
-      setBootstrapServers={setBootstrapServers}
       onSubmit={handleSubmit}
       isEditMode={!!groupId}
       navigateBack={navigateBack}
