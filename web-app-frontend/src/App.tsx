@@ -4,7 +4,7 @@ import 'hugeicons-react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import BootstrapGroups from './components/bootstrap-groups/BootstrapGroups';
 import MessagePublishing from './components/message-publishing/MessagePublishing';
-import MessageTemplates from './components/MessageTemplates';
+import MessageTemplates from './components/message-templates/MessageTemplates';
 import MessageConsuming from './components/message-consuming/MessageConsuming';
 import { contextPath } from './constant/common';
 import AddEditBootstrapGroup from './components/bootstrap-group/AddEditBootstrapGroup';
@@ -27,6 +27,14 @@ const App: React.FC = () => {
               </Route>
             </Route>
             <Route path="message-templates" element={<MessageTemplates />} />
+            <Route path="message-template">
+              {/*<Route path="add" element={<AddEditBootstrapGroup />} />*/}
+              <Route path={':templateId'}>
+                {/*<Route path="edit" element={<AddEditBootstrapGroup />} />
+                <Route path="consuming" element={<MessageConsuming />} />
+                <Route path="publishing" element={<MessagePublishing />} />*/}
+              </Route>
+            </Route>
           </Route>
         </Route>
       </Routes>
