@@ -49,3 +49,15 @@ export const tryDecodeToText = (base64: string | null): string => {
     return 'Not a valid base64 string';
   }
 };
+
+
+const encoder = new TextEncoder();
+
+/**
+ * Encode a string to base64
+ * @param text The string to encode
+ */
+export const encodeText = (text: string): string => {
+  const arrayBuffer = encoder.encode(text);
+  return encode(arrayBuffer);
+};

@@ -175,7 +175,7 @@ const MessageConsuming: React.FC = () => {
             </Form.Group>
             <Form.Group>
               <Row className={'mb-2'}>
-                <Col md={{ span: 1, offset: 11 }}>
+                <Col className="d-flex justify-content-end">
                   <Button
                     variant="primary"
                     type="submit"

@@ -13,11 +13,6 @@ const ApplicationLayout: React.FC = () => {
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link as={Link} to={`${contextPath}v1/message-publishing`} eventKey="message-publishing">
-            Message Publishing
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
           <Nav.Link as={Link} to={`${contextPath}v1/message-templates`} eventKey="message-templates">
             Message Templates
           </Nav.Link>

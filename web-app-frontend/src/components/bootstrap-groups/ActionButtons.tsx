@@ -1,17 +1,19 @@
 import React from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
-import { Delete01Icon, MessageSearch01Icon, PencilEdit01Icon } from 'hugeicons-react';
+import { Delete01Icon, MessageAdd01Icon, MessageSearch01Icon, PencilEdit01Icon } from 'hugeicons-react';
 
 
 export interface ActionButtonsProps {
   onEdit: () => void;
   onMessageConsuming: () => void;
+  onMessagePublishing: () => void;
   onDelete: () => void;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
                                                               onEdit,
                                                               onMessageConsuming,
+                                                              onMessagePublishing,
                                                               onDelete,
                                                             }) => (
   <ButtonGroup>
@@ -28,6 +30,13 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       title={'Consuming'}
     >
       <MessageSearch01Icon />
+    </Button>
+    <Button
+      variant="outline-secondary"
+      onClick={onMessagePublishing}
+      title={'Publishing'}
+    >
+      <MessageAdd01Icon />
     </Button>
     <Button
       variant="danger"

@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'hugeicons-react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import BootstrapGroups from './components/bootstrap-groups/BootstrapGroups';
-import MessagePublishing from './components/MessagePublishing';
+import MessagePublishing from './components/message-publishing/MessagePublishing';
 import MessageTemplates from './components/MessageTemplates';
 import MessageConsuming from './components/message-consuming/MessageConsuming';
 import { contextPath } from './constant/common';
@@ -23,9 +23,9 @@ const App: React.FC = () => {
               <Route path={':groupId'}>
                 <Route path="edit" element={<AddEditBootstrapGroup />} />
                 <Route path="consuming" element={<MessageConsuming />} />
+                <Route path="publishing" element={<MessagePublishing />} />
               </Route>
             </Route>
-            <Route path="message-publishing" element={<MessagePublishing />} />
             <Route path="message-templates" element={<MessageTemplates />} />
           </Route>
         </Route>
