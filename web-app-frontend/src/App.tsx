@@ -10,6 +10,7 @@ import { contextPath } from './constant/common';
 import AddEditBootstrapGroup from './components/bootstrap-group/AddEditBootstrapGroup';
 import ApplicationLayout from './components/common/ApplicationLayout';
 import AddEditMessageTemplate from './components/message-template/AddEditMessageTemplate';
+import MessageTemplatePublishing from './components/message-template/publishing/MessageTemplatePublishing';
 
 const App: React.FC = () => {
   return (
@@ -32,8 +33,7 @@ const App: React.FC = () => {
               <Route path="add" element={<AddEditMessageTemplate />} />
               <Route path={':templateId'}>
                 <Route path="edit" element={<AddEditMessageTemplate />} />
-                {/* <Route path="consuming" element={<MessageConsuming />} />
-                <Route path="publishing" element={<MessagePublishing />} />*/}
+                <Route path="publishing" element={<MessageTemplatePublishing />} />
               </Route>
             </Route>
           </Route>
