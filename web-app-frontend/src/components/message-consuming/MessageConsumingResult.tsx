@@ -3,6 +3,7 @@ import CustomTable from '../common/CustomTable';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { getLastMessages, getMessages, GetMessagesRs, MessageRs } from '../../api/bootstrap.group';
 import { tryDecodeToText } from '../../utils/base64';
+import { MessageConsumedModal } from './MessageConsumedModal';
 
 export interface MessageConsumingResultHandle {
   fetchMessages: (
@@ -26,6 +27,8 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
     const [valueView, setValueView] = useState<'base64' | 'raw'>('base64');
     const [error, setError] = useState<string | null>(null);
 
+    const [showModal, setShowModal] = useState(false);
+    const [selectedMessage, setSelectedMessage] = useState<MessageRs | null>(null);
 
     useImperativeHandle(ref, () => ({
       fetchMessages: async (
@@ -156,10 +159,11 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
             { key: 'value', label: 'Value' },
           ]}
           data={
-            messages.map((message) => {
+            messages.map((message, index) => {
                 const key = getMessageKey(message);
                 const value = getMessageValue(message);
                 return {
+                  index: index,
                   partition: `${message.partition}`,
                   offset: `${message.offset}`,
                   timestamp: `${message.timestamp}`,
@@ -185,6 +189,16 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
               }
             )
           }
+          rowBehavior={{
+            handler: (row) => {
+              const index = row.index as number;
+              if (messages.length > index) {
+                const message = messages[index]
+                setSelectedMessage(message)
+                setShowModal(true);
+              }
+            }
+          }}
           sortableColumns={[
             'partition', 'offset', 'timestamp', 'timestampType', 'key', 'value'
           ]}
@@ -194,6 +208,13 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
           loading={messageLoading}
           responsive={true}
         />
+        {selectedMessage && (
+          <MessageConsumedModal
+            showModal={showModal}
+            setShowModal={setShowModal}
+            message={selectedMessage}
+          />
+        )}
       </>
     )
   }
