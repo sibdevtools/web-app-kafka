@@ -259,7 +259,14 @@ const CustomTable: React.FC<CustomTableProps> = ({
       </tr>
       </thead>
       <tbody>
-      {loading && (<Loader />)}
+      {loading && (
+        <tr>
+          <td colSpan={columns.length}>
+            <Loader />
+          </td>
+        </tr>
+      )
+      }
       {!loading && preparedData.map((row, index) => {
           if (!rowBehavior) {
             return (
