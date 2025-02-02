@@ -45,7 +45,7 @@ export const BootstrapGroupForm: React.FC<MockFormProps> = ({
           </Button>
         </Col>
         <Col md={9}>
-          <h2>{isEditMode ? 'Edit Mock' : 'Add Mock'}</h2>
+          <h2>{isEditMode ? 'Edit Bootstrap Group' : 'Add Bootstrap Group'}</h2>
         </Col>
       </Row>
       {loading ?

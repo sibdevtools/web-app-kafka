@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Form } from 'react-bootstrap';
+import { Form, Table } from 'react-bootstrap';
+import { Loader } from './Loader';
 
 export interface TableColumn {
   key: string;
@@ -64,6 +65,8 @@ export interface CustomTableProps {
    * Row behavior
    */
   rowBehavior?: RowBehavior;
+  loading?: boolean;
+  responsive?: boolean;
 }
 
 const CustomTable: React.FC<CustomTableProps> = ({
@@ -77,7 +80,9 @@ const CustomTable: React.FC<CustomTableProps> = ({
                                                      centerHeaders: true,
                                                      textCenterValues: false,
                                                    },
-                                                   rowBehavior
+                                                   rowBehavior,
+                                                   loading = false,
+                                                   responsive = false
                                                  }) => {
   const [filter, setFilter] = useState<{ [key: string]: string }>({});
   const [sortColumn, setSortColumn] = useState<string>('');
@@ -125,7 +130,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
     if (!cell || typeof cell === 'string' || typeof cell === 'number' || typeof cell === 'boolean') {
       return '';
     }
-    return cell.className;
+    return cell.className ?? '';
   };
 
   const getCellOnClick = (row: CustomTableRow, cell: Cell): undefined | (() => void) => {
@@ -219,7 +224,10 @@ const CustomTable: React.FC<CustomTableProps> = ({
   };
 
   return (
-    <Table className={className ?? ''}>
+    <Table
+      responsive={responsive}
+      className={className ?? ''}
+    >
       <thead className={`table-dark ${thead?.className ?? ''}`}>
       <tr className={`${styleProps.centerHeaders ? 'text-center' : ''}`}>
         {columns.map((column) => (
@@ -251,7 +259,8 @@ const CustomTable: React.FC<CustomTableProps> = ({
       </tr>
       </thead>
       <tbody>
-      {preparedData.map((row, index) => {
+      {loading && (<Loader />)}
+      {!loading && preparedData.map((row, index) => {
           if (!rowBehavior) {
             return (
               <tr>

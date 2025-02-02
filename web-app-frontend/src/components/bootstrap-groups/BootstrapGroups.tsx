@@ -99,6 +99,7 @@ const BootstrapGroups: React.FC = () => {
                 actions: {
                   representation: <ActionButtons
                     onEdit={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/edit`)}
+                    onMessageConsuming={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/consuming`)}
                     onDelete={() => doDeleteBootstrapGroup(group)}
                   />
                 }

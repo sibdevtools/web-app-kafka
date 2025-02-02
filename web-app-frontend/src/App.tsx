@@ -22,9 +22,9 @@ const App: React.FC = () => {
               <Route path="add" element={<AddEditBootstrapGroup />} />
               <Route path={':groupId'}>
                 <Route path="edit" element={<AddEditBootstrapGroup />} />
+                <Route path="consuming" element={<MessageConsuming />} />
               </Route>
             </Route>
-            <Route path="message-consuming" element={<MessageConsuming />} />
             <Route path="message-publishing" element={<MessagePublishing />} />
             <Route path="message-templates" element={<MessageTemplates />} />
           </Route>

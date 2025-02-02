@@ -43,3 +43,50 @@ export const createBootstrapGroup = (rq: BootstrapGroupRq) => bootstrapGroup.pos
 export const updateBootstrapGroup = (groupId: number, rq: BootstrapGroupRq) => bootstrapGroup.put(`/${groupId}`, rq);
 
 export const deleteBootstrapGroup = (groupId: number) => bootstrapGroup.delete(`/${groupId}`);
+
+export interface GetTopicsRs {
+  success: boolean;
+  body: string[];
+}
+
+export const getTopics = (groupId: number) => bootstrapGroup.get<GetTopicsRs>(`/${groupId}/topics`);
+
+export interface MessageRs {
+  topic: string;
+  partition: number;
+  offset: number;
+  timestamp: number;
+  timestampType: string;
+  headers: Record<string, string>;
+  key: string | null;
+  value: string | null;
+}
+
+export interface GetMessagesRs {
+  success: boolean;
+  body: MessageRs[];
+}
+
+export const getMessages = (
+  groupId: number,
+  topic: string,
+  maxMessages: number,
+  maxTimeout: number | null
+) => bootstrapGroup.get<GetMessagesRs>(`/${groupId}/${topic}/messages`, {
+  params: {
+    maxMessages: maxMessages,
+    maxTimeout: maxTimeout
+  }
+});
+
+export const getLastMessages = (
+  groupId: number,
+  topic: string,
+  maxMessages: number,
+  maxTimeout: number | null
+) => bootstrapGroup.get<GetMessagesRs>(`/${groupId}/${topic}/lastMessages`, {
+  params: {
+    maxMessages: maxMessages,
+    maxTimeout: maxTimeout
+  }
+});
