@@ -6,6 +6,11 @@ import { Engine, MessageTemplateRq, MessageTemplateRs } from '../../api/message.
 import AceEditor from 'react-ace';
 import { loadSettings } from '../../settings/utils';
 import { encodeText, tryDecodeToText } from '../../utils/base64';
+import SchemaFormBuilder from './schema-builder/SchemaFormBuilder';
+import { SchemaNode } from './schema-builder/type';
+import { convertToJsonSchema, parseJsonSchema } from './schema-builder/converter';
+
+import '../../constant/ace.imports'
 
 export interface MessageTemplateFormHandle {
   getMessageTemplateRq: () => MessageTemplateRq;
@@ -19,6 +24,12 @@ type MessageTemplateFormHandleProps = {
   navigateBack: () => void;
 };
 
+const EngineToAceMode: Record<Engine, string> = {
+  AVRO: 'json',
+  FREEMARKER: 'text',
+  JAVA_TEMPLATE_ENGINE: 'text'
+}
+
 export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, MessageTemplateFormHandleProps>(
   ({
      loading,
@@ -31,8 +42,14 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
     const [code, setCode] = useState('');
     const [name, setName] = useState('');
     const [engine, setEngine] = useState<Engine>('FREEMARKER');
-    const [schema, setSchema] = useState<Record<string, any>>({});
     const [template, setTemplate] = useState<string>('');
+    const [rootSchema, setRootSchema] = useState<SchemaNode>({
+      title: '',
+      type: 'object',
+      specification: 'none',
+      nullable: false,
+      properties: [],
+    });
 
     useImperativeHandle(ref, () => ({
       getMessageTemplateRq: (): MessageTemplateRq => {
@@ -40,7 +57,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
           code,
           name,
           engine,
-          schema,
+          schema: convertToJsonSchema(rootSchema),
           template: encodeText(template)
         };
       },
@@ -48,7 +65,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
         setCode(rs.code);
         setName(rs.name);
         setEngine(rs.engine);
-        setSchema(rs.schema);
+        setRootSchema(parseJsonSchema(rs.schema));
         setTemplate(tryDecodeToText(rs.template));
       }
     }));
@@ -132,6 +149,21 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                   </Row>
                 </Form.Group>
 
+                <Form.Group controlId="messageTemplateEngineInput">
+                  <Row className={'mb-2'}>
+                    <Col md={3}>
+                      <Form.Label>Schema</Form.Label>
+                    </Col>
+                    <Col md={9}>
+                      <SchemaFormBuilder
+                        node={rootSchema}
+                        onChange={setRootSchema}
+                        isRoot={true}
+                      />
+                    </Col>
+                  </Row>
+                </Form.Group>
+
                 <Form.Group controlId="messageTemplateTemplateInput">
                   <Row className={'mb-2'}>
                     <Col md={3}>
@@ -139,7 +171,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                     </Col>
                     <Col md={9}>
                       <AceEditor
-                        mode={'text'}
+                        mode={EngineToAceMode[engine]}
                         theme={settings['aceTheme'].value}
                         name={`schema-representation`}
                         value={template}
