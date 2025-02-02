@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getTopics } from '../../api/bootstrap.group';
+import { getTopics, RecordMetadataDto, sendMessage } from '../../api/bootstrap.group';
 import { contextPath } from '../../constant/common';
 import { Loader } from '../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
-import { encodeText, tryDecodeToText } from '../../utils/base64';
+import { encode, encodeText, tryDecodeToText } from '../../utils/base64';
 
 interface HeaderForm {
   key: string | null;
@@ -19,21 +19,28 @@ const MessagePublishing: React.FC = () => {
   const { groupId } = useParams();
   const [topics, setTopics] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState<boolean>(false);
 
   const [topic, setTopic] = useState<string>('');
   const [partition, setPartition] = useState<number | null>(null);
   const [timestamp, setTimestamp] = useState<number | null>(null);
   const [maxTimeout, setMaxTimeout] = useState<number>(10000);
   const [key, setKey] = useState<string | null>(null);
+  const [value, setValue] = useState<string | null>(null);
   const [headers, setHeaders] = useState<HeaderForm[]>([
     {
       key: null,
       value: null,
-      view: 'base64'
+      view: 'raw'
     }
   ]);
 
-  const [keyView, setKeyView] = useState<'base64' | 'raw'>('base64');
+  const [record, setRecord] = useState<RecordMetadataDto | null>(null);
+
+  const [keyView, setKeyView] = useState<'base64' | 'raw'>('raw');
+
+  const [valueInputType, setValueInputType] = useState<'text' | 'file'>('text');
+  const [valueView, setValueView] = useState<'base64' | 'raw'>('raw');
 
   useEffect(() => {
     fetchTopics();
@@ -71,25 +78,48 @@ const MessagePublishing: React.FC = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setRecord(null);
+    setError(null);
     if (!groupId) {
       return
     }
-    //TODO: send to Kafka
-    console.log('Sending message to Kafka', topic, partition, timestamp, maxTimeout, key, headers);
+    const convertToRecord = (headers: HeaderForm[]): Record<string, string> => {
+      return headers
+        .filter(header => header.key !== null && header.value !== null)
+        .reduce((acc, header) => {
+          if (header.key && header.value) {
+            acc[header.key] = header.value;
+          }
+          return acc;
+        }, {} as Record<string, string>);
+    }
+    try {
+      setSending(true);
+      const rqHeaders = convertToRecord(headers)
+      const rs = await sendMessage(+groupId, topic, {
+        partition,
+        timestamp,
+        maxTimeout,
+        key,
+        value,
+        headers: rqHeaders
+      });
+      if (rs.data.success) {
+        let record = rs.data.body;
+        setRecord(record);
+      } else {
+        setError('Failed to send message');
+        return;
+      }
+    } catch (error) {
+      setError(`Failed to send message: ${error}`);
+      console.error('Failed to send message:', error);
+    } finally {
+      setSending(false);
+    }
   };
 
-  const getKeyRepresentation = (): string => {
-    if (!key) {
-      return ''
-    }
-    if (keyView === 'raw') {
-      return tryDecodeToText(key)
-    }
-
-    return key;
-  }
-
-  const getHeaderRepresentation = (view: 'base64' | 'raw', value: string | null): string => {
+  const getViewRepresentation = (view: 'base64' | 'raw', value: string | null): string => {
     if (!value) {
       return ''
     }
@@ -112,6 +142,40 @@ const MessagePublishing: React.FC = () => {
       setKey(encoded)
     }
   }
+
+  const changeValue = (changed: string | null) => {
+    if (!changed) {
+      setValue(null)
+      return
+    }
+    if (valueView === 'base64') {
+      setValue(changed)
+    } else {
+      const encoded = encodeText(changed)
+      setValue(encoded)
+    }
+  }
+
+  const getFileContent = useCallback((file: File): Promise<ArrayBuffer> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = () => {
+        const binaryData = reader.result as ArrayBuffer;
+        resolve(binaryData);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+    const content = await getFileContent(file);
+    setValue(encode(content));
+  };
 
   if (loading) {
     return (
@@ -146,30 +210,30 @@ const MessagePublishing: React.FC = () => {
           <Form className="mt-4" onSubmit={onSubmit}>
             <Form.Group>
               <Row className={'mb-2'}>
-                <Col md={3}>
+                <Col md={2}>
                   <Form.Label>Topic</Form.Label>
                 </Col>
-                <Col md={9}>
-                  <Form.Select
-                    value={topic}
+                <Col md={10}>
+                  <Form.Control
+                    value={topic ?? ''}
+                    list={'topics-suggestions'}
                     onChange={(e) => setTopic(e.target.value)}
                     required={true}
-                  >
-                    {topics.map((topic) => (
-                      <option key={topic} value={topic}>
-                        {topic}
-                      </option>
+                  />
+                  <datalist id="topics-suggestions">
+                    {topics.map((topic, i) => (
+                      <option key={i} value={topic} />
                     ))}
-                  </Form.Select>
+                  </datalist>
                 </Col>
               </Row>
             </Form.Group>
             <Form.Group>
               <Row className={'mb-2'}>
-                <Col md={3}>
+                <Col md={2}>
                   <Form.Label>Partition</Form.Label>
                 </Col>
-                <Col md={9}>
+                <Col md={10}>
                   <Form.Control
                     value={partition ?? ''}
                     type={'number'}
@@ -180,10 +244,10 @@ const MessagePublishing: React.FC = () => {
             </Form.Group>
             <Form.Group>
               <Row className={'mb-2'}>
-                <Col md={3}>
+                <Col md={2}>
                   <Form.Label>Timestamp</Form.Label>
                 </Col>
-                <Col md={9}>
+                <Col md={10}>
                   <Form.Control
                     value={timestamp ?? ''}
                     type={'number'}
@@ -194,10 +258,10 @@ const MessagePublishing: React.FC = () => {
             </Form.Group>
             <Form.Group>
               <Row className={'mb-2'}>
-                <Col md={3}>
+                <Col md={2}>
                   <Form.Label>Max Timeout</Form.Label>
                 </Col>
-                <Col md={9}>
+                <Col md={10}>
                   <InputGroup>
                     <Form.Control
                       value={maxTimeout}
@@ -211,11 +275,11 @@ const MessagePublishing: React.FC = () => {
               </Row>
             </Form.Group>
             <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={3}>
+              <Row>
+                <Col md={2}>
                   <Form.Label>Headers</Form.Label>
                 </Col>
-                <Col md={9}>
+                <Col md={10}>
                   {headers.map((header, index) => (
                     <Row className={'mb-2'}>
                       <InputGroup>
@@ -229,7 +293,7 @@ const MessagePublishing: React.FC = () => {
                         />
                         <InputGroup.Text>=</InputGroup.Text>
                         <Form.Control
-                          value={getHeaderRepresentation(header.view, header.value)}
+                          value={getViewRepresentation(header.view, header.value)}
                           onChange={(e) => {
                             const newHeaders = [...headers]
                             const changed = e.target.value
@@ -261,7 +325,7 @@ const MessagePublishing: React.FC = () => {
                             updated.splice(index + 1, 0, {
                               key: null,
                               value: null,
-                              view: 'base64'
+                              view: 'raw'
                             });
                             setHeaders(updated)
                           }}
@@ -286,10 +350,10 @@ const MessagePublishing: React.FC = () => {
             </Form.Group>
             <Form.Group>
               <Row className={'mb-2'}>
-                <Col md={3}>
+                <Col md={2}>
                   <Form.Label>Key</Form.Label>
                 </Col>
-                <Col md={9}>
+                <Col md={10}>
                   <InputGroup>
                     <Form.Select
                       value={keyView}
@@ -299,10 +363,53 @@ const MessagePublishing: React.FC = () => {
                       <option value={'raw'}>Raw</option>
                     </Form.Select>
                     <Form.Control
-                      value={getKeyRepresentation()}
+                      value={getViewRepresentation(keyView, key)}
                       onChange={(e) => changeKey(e.target.value)}
                     />
                   </InputGroup>
+                </Col>
+              </Row>
+            </Form.Group>
+            <Form.Group>
+              <Row className={'mb-2'}>
+                <Col md={2}>
+                  <Form.Label>Value</Form.Label>
+                </Col>
+                <Col md={10}>
+                  <Row className={'mb-2'}>
+                    <InputGroup>
+                      <Form.Select
+                        value={valueInputType}
+                        onChange={(e) => setValueInputType(e.target.value as 'text' | 'file')}
+                      >
+                        <option value={'text'}>Text</option>
+                        <option value={'file'}>File</option>
+                      </Form.Select>
+                      {valueInputType === 'text' && (
+                        <Form.Select
+                          value={valueView}
+                          onChange={(e) => setValueView(e.target.value as 'base64' | 'raw')}
+                        >
+                          <option value={'base64'}>Base64</option>
+                          <option value={'raw'}>Raw</option>
+                        </Form.Select>
+                      )}
+                    </InputGroup>
+                  </Row>
+                  <Form.Group className={'mb-2'}>
+                    {valueInputType === 'text' && (
+                      <Form.Control
+                        value={getViewRepresentation(valueView, value)}
+                        onChange={(e) => changeValue(e.target.value)}
+                      />
+                    )}
+                    {valueInputType === 'file' && (
+                      <Form.Control
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                    )}
+                  </Form.Group>
                 </Col>
               </Row>
             </Form.Group>
@@ -312,6 +419,7 @@ const MessagePublishing: React.FC = () => {
                   <Button
                     variant="primary"
                     type="submit"
+                    disabled={sending}
                     title={'Send'}
                   >
                     <MessageAdd01Icon />
@@ -322,6 +430,33 @@ const MessagePublishing: React.FC = () => {
           </Form>
         </Col>
       </Row>
+      {record && (
+        <Col md={{ span: 10, offset: 1 }}>
+          <Row className={'mb-2'}>
+            <Row><h2>Message Published</h2></Row>
+            <Row>
+              <Col md={2}>Partition:</Col>
+              <Col md={10}>{record.partition}</Col>
+            </Row>
+            <Row>
+              <Col md={2}>Offset:</Col>
+              <Col md={10}>{record.offset}</Col>
+            </Row>
+            <Row>
+              <Col md={2}>Timestamp:</Col>
+              <Col md={10}>{record.timestamp}</Col>
+            </Row>
+            <Row>
+              <Col md={2}>Serialized key size:</Col>
+              <Col md={10}>{record.serializedKeySize}</Col>
+            </Row>
+            <Row>
+              <Col md={2}>Serialized value size:</Col>
+              <Col md={10}>{record.serializedValueSize}</Col>
+            </Row>
+          </Row>
+        </Col>
+      )}
     </Container>
   );
 };

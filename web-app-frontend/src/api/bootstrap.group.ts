@@ -90,3 +90,31 @@ export const getLastMessages = (
     maxTimeout: maxTimeout
   }
 });
+
+export interface SendMessageRq {
+  partition: number | null;
+  timestamp: number | null;
+  key: string | null;
+  value: string | null;
+  headers: Record<string, string> | null;
+  maxTimeout: number | null;
+}
+
+export interface RecordMetadataDto {
+  offset: number;
+  timestamp: number;
+  serializedKeySize: number;
+  serializedValueSize: number;
+  partition: number;
+}
+
+export interface SendMessageRs {
+  success: boolean;
+  body: RecordMetadataDto;
+}
+
+export const sendMessage = (
+  groupId: number,
+  topic: string,
+  rq: SendMessageRq,
+) => bootstrapGroup.post<SendMessageRs>(`/${groupId}/${topic}/message`, rq);
