@@ -1,12 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  BootstrapGroupRs,
-  getAllBootstrapGroup,
-  getTopics,
-  RecordMetadataDto,
-  sendMessage
-} from '../../../api/bootstrap.group';
+import { BootstrapGroupRs, getAllBootstrapGroup, getTopics, } from '../../../api/bootstrap.group';
+import { getMessageTemplate, MessageTemplateRs, RecordMetadataDto, sendMessage } from '../../../api/message.templates';
 import { contextPath } from '../../../constant/common';
 import { Loader } from '../../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
@@ -14,6 +9,9 @@ import { ArrowLeft01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from '
 import { encodeText, tryDecodeToText } from '../../../utils/base64';
 
 import { MessageTemplatePublishedModal } from './MessageTemplatePublishedModal';
+import ValueSchemaForm, { ValueSchemaFormHandle } from './ValueSchemaForm';
+import { parseJsonSchema } from '../schema-builder/converter';
+import { ObjectSchemaNode } from '../schema-builder/type';
 
 interface HeaderForm {
   key: string | null;
@@ -30,9 +28,13 @@ const MessageTemplatePublishing: React.FC = () => {
   const [topicsLoading, setTopicsLoading] = useState(false);
   const [topics, setTopics] = useState<string[]>([]);
 
+  const [templateLoading, setTemplateLoading] = useState(true);
+  const [template, setTemplate] = useState<MessageTemplateRs>();
+
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState<boolean>(false);
+  const valueSchemaFormRef = useRef<ValueSchemaFormHandle>(null);
 
   const [groupId, setGroupId] = useState<number>(0);
   const [topic, setTopic] = useState<string>('');
@@ -40,7 +42,6 @@ const MessageTemplatePublishing: React.FC = () => {
   const [timestamp, setTimestamp] = useState<number | null>(null);
   const [maxTimeout, setMaxTimeout] = useState<number>(10000);
   const [key, setKey] = useState<string | null>(null);
-  const [value, setValue] = useState<string | null>(null);
   const [headers, setHeaders] = useState<HeaderForm[]>([
     {
       key: null,
@@ -56,7 +57,10 @@ const MessageTemplatePublishing: React.FC = () => {
 
   useEffect(() => {
     fetchBootstrapGroups();
-  }, []);
+    if (templateId) {
+      fetchMessageTemplate(+templateId);
+    }
+  }, [templateId]);
 
   const fetchBootstrapGroups = async () => {
     setGroupsLoading(true);
@@ -79,6 +83,25 @@ const MessageTemplatePublishing: React.FC = () => {
       setError('Failed to fetch bootstrap groups');
     } finally {
       setGroupsLoading(false);
+    }
+  };
+
+  const fetchMessageTemplate = async (templateId: number) => {
+    setTemplateLoading(true);
+    try {
+      const response = await getMessageTemplate(templateId);
+      if (response.data.success) {
+        let template = response.data.body;
+        setTemplate(template);
+      } else {
+        setError('Failed to fetch template');
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to fetch template:', error);
+      setError('Failed to fetch template');
+    } finally {
+      setTemplateLoading(false);
     }
   };
 
@@ -109,14 +132,14 @@ const MessageTemplatePublishing: React.FC = () => {
   };
 
   const navigateBack = () => {
-    navigate(contextPath);
+    navigate(`${contextPath}v1/message-templates`);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRecord(null);
     setError(null);
-    if (!groupId) {
+    if (!templateId) {
       return
     }
     const convertToRecord = (headers: HeaderForm[]): Record<string, string> => {
@@ -131,13 +154,16 @@ const MessageTemplatePublishing: React.FC = () => {
     }
     try {
       setSending(true);
+      const input = valueSchemaFormRef?.current?.getValue() ?? {}
       const rqHeaders = convertToRecord(headers)
-      const rs = await sendMessage(+groupId, topic, {
+      const rs = await sendMessage(+templateId, {
+        bootstrapGroupId: groupId,
+        topic,
         partition,
         timestamp,
         maxTimeout,
         key,
-        value,
+        input,
         headers: rqHeaders
       });
       if (rs.data.success) {
@@ -180,12 +206,6 @@ const MessageTemplatePublishing: React.FC = () => {
     }
   }
 
-  if (groupsLoading) {
-    return (
-      <Loader />
-    );
-  }
-
   return (
     <Container className="mt-4 mb-4">
       <Row className="mb-2">
@@ -211,34 +231,42 @@ const MessageTemplatePublishing: React.FC = () => {
         }
         <Col md={{ span: 10, offset: 1 }}>
           <Form className="mt-4" onSubmit={onSubmit}>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={2}>
-                  <Form.Label>Bootstrap Group</Form.Label>
-                </Col>
-                <Col md={10}>
-                  <Form.Select
-                    value={groupId}
-                    onChange={async (e) => {
-                      const rawGroupId = e.target.value;
-                      if (!rawGroupId) {
-                        return
-                      }
-                      const groupId = Number(rawGroupId)
-                      setGroupId(groupId)
-                      await fetchTopics(groupId);
-                    }}
-                    required={true}
-                  >
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>{group.name}</option>
-                    ))}
-                  </Form.Select>
-                </Col>
-              </Row>
-            </Form.Group>
-            {(groupsLoading || topicsLoading) && (<Loader />)}
-            {!(groupsLoading || topicsLoading) && (
+            {(templateLoading || groupsLoading) && (<Loader />)}
+            {!(templateLoading || groupsLoading) && groups.length > 0 && (
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col md={2}>
+                    <Form.Label>Bootstrap Group</Form.Label>
+                  </Col>
+                  <Col md={10}>
+                    <Form.Select
+                      value={groupId}
+                      onChange={async (e) => {
+                        const rawGroupId = e.target.value;
+                        if (!rawGroupId) {
+                          return
+                        }
+                        const groupId = Number(rawGroupId)
+                        setGroupId(groupId)
+                        await fetchTopics(groupId);
+                      }}
+                      required={true}
+                    >
+                      {groups.map((group) => (
+                        <option key={group.id} value={group.id}>{group.name}</option>
+                      ))}
+                    </Form.Select>
+                  </Col>
+                </Row>
+              </Form.Group>
+            )}
+            {(topicsLoading) && (<Loader />)}
+            {!(templateLoading || groupsLoading || topicsLoading) && groups.length === 0 && (
+              <Alert variant="warning">
+                Create Bootstrap Group first to publish messages.
+              </Alert>
+            )}
+            {!(templateLoading || groupsLoading || topicsLoading) && groups.length > 0 && (
               <>
                 <Form.Group>
                   <Row className={'mb-2'}>
@@ -408,6 +436,9 @@ const MessageTemplatePublishing: React.FC = () => {
                       <Form.Label>Value</Form.Label>
                     </Col>
                     <Col md={10}>
+                      <ValueSchemaForm
+                        ref={valueSchemaFormRef}
+                        schema={parseJsonSchema(template?.schema) as ObjectSchemaNode} />
                     </Col>
                   </Row>
                 </Form.Group>

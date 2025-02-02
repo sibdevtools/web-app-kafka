@@ -56,3 +56,32 @@ export interface GetMessageTemplateRs {
 }
 
 export const getMessageTemplate = (id: number) => messageTemplate.get<GetMessageTemplateRs>(`/${id}`);
+
+export interface RecordMetadataDto {
+  offset: number;
+  timestamp: number;
+  serializedKeySize: number;
+  serializedValueSize: number;
+  partition: number;
+}
+
+export interface SendMessageRq {
+  bootstrapGroupId: number;
+  topic: string;
+  partition: number | null;
+  timestamp: number | null;
+  key: string | null;
+  input: Record<string, any>;
+  headers: Record<string, string> | null;
+  maxTimeout: number | null;
+}
+
+export interface SendMessageRs {
+  success: boolean;
+  body: RecordMetadataDto;
+}
+
+export const sendMessage = (
+  id: number,
+  rq: SendMessageRq,
+) => messageTemplate.post<SendMessageRs>(`/${id}/send`, rq);

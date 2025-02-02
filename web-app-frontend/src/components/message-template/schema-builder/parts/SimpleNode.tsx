@@ -76,6 +76,13 @@ const SimpleNode: React.FC<SimpleNodeProps> = ({
         </InputGroup>
       </Form.Group>
 
+      {node.specification === 'enum' && (
+        <EnumNode
+          node={node}
+          onChange={onChange}
+        />
+      )}
+
       {node.type === 'string' && (
         <StringNode
           node={node as StringSchemaNode}
@@ -100,13 +107,6 @@ const SimpleNode: React.FC<SimpleNodeProps> = ({
       {node.type === 'array' && (
         <ArrayNode
           node={node as ArraySchemaNode}
-          onChange={onChange}
-        />
-      )}
-
-      {node.specification === 'enum' && (
-        <EnumNode
-          node={node}
           onChange={onChange}
         />
       )}
