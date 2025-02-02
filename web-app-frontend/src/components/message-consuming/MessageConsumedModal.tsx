@@ -7,6 +7,7 @@ import { TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
 import { loadSettings } from '../../settings/utils';
 import { FloppyDiskIcon, TextWrapIcon } from 'hugeicons-react';
 import { downloadBase64File } from '../../utils/files';
+import { ViewType } from '../../utils/view';
 
 export interface MessageConsumedModalProps {
   showModal: boolean;
@@ -24,8 +25,8 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
   const [isWordWrapEnabled, setIsWordWrapEnabled] = useState(true);
 
   const [headerViews, setHeaderViews] = useState<Array<'raw' | 'base64'>>([]);
-  const [keyView, setKeyView] = useState<'base64' | 'raw'>('base64');
-  const [valueView, setValueView] = useState<'base64' | 'raw'>('base64');
+  const [keyView, setKeyView] = useState<ViewType>('base64');
+  const [valueView, setValueView] = useState<ViewType>('base64');
   const [valueType, setValueType] = useState<TextType>('Text');
 
   useEffect(() => {
@@ -114,7 +115,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                 />
                 <Form.Select
                   value={keyView}
-                  onChange={(e) => setKeyView(e.target.value as 'base64' | 'raw')}
+                  onChange={(e) => setKeyView(e.target.value as ViewType)}
                   required={true}
                 >
                   {['base64', 'raw'].map((it) => (
@@ -135,7 +136,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                 <InputGroup>
                   <Form.Select
                     value={valueView}
-                    onChange={(e) => setValueView(e.target.value as 'base64' | 'raw')}
+                    onChange={(e) => setValueView(e.target.value as ViewType)}
                     required={true}
                   >
                     {['base64', 'raw'].map((it) => (

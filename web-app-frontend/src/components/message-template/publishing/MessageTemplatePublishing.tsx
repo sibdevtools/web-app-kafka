@@ -6,17 +6,18 @@ import { contextPath } from '../../../constant/common';
 import { Loader } from '../../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
-import { encodeText, tryDecodeToText } from '../../../utils/base64';
+import { encodeText } from '../../../utils/base64';
 
 import { MessageTemplatePublishedModal } from './MessageTemplatePublishedModal';
 import ValueSchemaForm, { ValueSchemaFormHandle } from './ValueSchemaForm';
 import { parseJsonSchema } from '../schema-builder/converter';
 import { ObjectSchemaNode } from '../schema-builder/type';
+import { getViewRepresentation, ViewType } from '../../../utils/view';
 
 interface HeaderForm {
   key: string | null;
   value: string | null;
-  view: 'base64' | 'raw';
+  view: ViewType;
 }
 
 const MessageTemplatePublishing: React.FC = () => {
@@ -49,11 +50,12 @@ const MessageTemplatePublishing: React.FC = () => {
       view: 'raw'
     }
   ]);
+  const [templateHeaders, setTemplateHeaders] = useState<HeaderForm[]>([]);
 
   const [record, setRecord] = useState<RecordMetadataDto | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const [keyView, setKeyView] = useState<'base64' | 'raw'>('raw');
+  const [keyView, setKeyView] = useState<ViewType>('raw');
 
   useEffect(() => {
     fetchBootstrapGroups();
@@ -104,6 +106,17 @@ const MessageTemplatePublishing: React.FC = () => {
       setTemplateLoading(false);
     }
   };
+
+  useEffect(() => {
+    const headers = Object.entries(template?.headers || {}).map(([key, value]) => {
+      return {
+        key: key,
+        value: value,
+        view: 'raw'
+      } as HeaderForm
+    })
+    setTemplateHeaders(headers);
+  }, [template]);
 
   const fetchTopics = async (groupId: number) => {
     setTopicsLoading(true);
@@ -181,17 +194,6 @@ const MessageTemplatePublishing: React.FC = () => {
       setSending(false);
     }
   };
-
-  const getViewRepresentation = (view: 'base64' | 'raw', value: string | null): string => {
-    if (!value) {
-      return ''
-    }
-    if (view === 'raw') {
-      return tryDecodeToText(value)
-    }
-
-    return value;
-  }
 
   const changeKey = (changed: string | null) => {
     if (!changed) {
@@ -337,6 +339,41 @@ const MessageTemplatePublishing: React.FC = () => {
                 <Form.Group>
                   <Row>
                     <Col md={2}>
+                      <Form.Label>Template Headers</Form.Label>
+                    </Col>
+                    <Col md={10}>
+                      {templateHeaders.map((header, index) => (
+                        <Row className={'mb-2'}>
+                          <InputGroup>
+                            <Form.Control
+                              value={header.key ?? ''}
+                              readOnly={true}
+                            />
+                            <InputGroup.Text>=</InputGroup.Text>
+                            <Form.Control
+                              value={getViewRepresentation(header.view, header.value)}
+                              readOnly={true}
+                            />
+                            <Form.Select
+                              value={header.view}
+                              onChange={(e) => {
+                                const newHeaders = [...templateHeaders]
+                                newHeaders[index].view = e.target.value as ViewType
+                                setHeaders(newHeaders)
+                              }}
+                            >
+                              <option value={'base64'}>Base64</option>
+                              <option value={'raw'}>Raw</option>
+                            </Form.Select>
+                          </InputGroup>
+                        </Row>
+                      ))}
+                    </Col>
+                  </Row>
+                </Form.Group>
+                <Form.Group>
+                  <Row>
+                    <Col md={2}>
                       <Form.Label>Headers</Form.Label>
                     </Col>
                     <Col md={10}>
@@ -371,7 +408,7 @@ const MessageTemplatePublishing: React.FC = () => {
                               value={header.view}
                               onChange={(e) => {
                                 const newHeaders = [...headers]
-                                newHeaders[index].view = e.target.value as 'base64' | 'raw'
+                                newHeaders[index].view = e.target.value as ViewType
                                 setHeaders(newHeaders)
                               }}
                             >
@@ -417,7 +454,7 @@ const MessageTemplatePublishing: React.FC = () => {
                       <InputGroup>
                         <Form.Select
                           value={keyView}
-                          onChange={(e) => setKeyView(e.target.value as 'base64' | 'raw')}
+                          onChange={(e) => setKeyView(e.target.value as ViewType)}
                         >
                           <option value={'base64'}>Base64</option>
                           <option value={'raw'}>Raw</option>

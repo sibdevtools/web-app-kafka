@@ -6,16 +6,17 @@ import { contextPath, TextType, textTypeAceModeMap, textTypes } from '../../cons
 import { Loader } from '../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
-import { encode, encodeText, tryDecodeToText } from '../../utils/base64';
+import { encode, encodeText } from '../../utils/base64';
 import { loadSettings } from '../../settings/utils';
 
 import '../../constant/ace.imports'
 import { MessagePublishedModal } from './MessagePublishedModal';
+import { getViewRepresentation, ViewType } from '../../utils/view';
 
 interface HeaderForm {
   key: string | null;
   value: string | null;
-  view: 'base64' | 'raw';
+  view: ViewType;
 }
 
 const MessagePublishing: React.FC = () => {
@@ -44,10 +45,10 @@ const MessagePublishing: React.FC = () => {
   const [record, setRecord] = useState<RecordMetadataDto | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const [keyView, setKeyView] = useState<'base64' | 'raw'>('raw');
+  const [keyView, setKeyView] = useState<ViewType>('raw');
 
   const [valueInputType, setValueInputType] = useState<'text' | 'file'>('text');
-  const [valueView, setValueView] = useState<'base64' | 'raw'>('raw');
+  const [valueView, setValueView] = useState<ViewType>('raw');
   const [valueType, setValueType] = useState<TextType>('Text');
 
   useEffect(() => {
@@ -127,17 +128,6 @@ const MessagePublishing: React.FC = () => {
       setSending(false);
     }
   };
-
-  const getViewRepresentation = (view: 'base64' | 'raw', value: string | null): string => {
-    if (!value) {
-      return ''
-    }
-    if (view === 'raw') {
-      return tryDecodeToText(value)
-    }
-
-    return value;
-  }
 
   const changeKey = (changed: string | null) => {
     if (!changed) {
@@ -320,7 +310,7 @@ const MessagePublishing: React.FC = () => {
                           value={header.view}
                           onChange={(e) => {
                             const newHeaders = [...headers]
-                            newHeaders[index].view = e.target.value as 'base64' | 'raw'
+                            newHeaders[index].view = e.target.value as ViewType
                             setHeaders(newHeaders)
                           }}
                         >
@@ -366,7 +356,7 @@ const MessagePublishing: React.FC = () => {
                   <InputGroup>
                     <Form.Select
                       value={keyView}
-                      onChange={(e) => setKeyView(e.target.value as 'base64' | 'raw')}
+                      onChange={(e) => setKeyView(e.target.value as ViewType)}
                     >
                       <option value={'base64'}>Base64</option>
                       <option value={'raw'}>Raw</option>
@@ -397,7 +387,7 @@ const MessagePublishing: React.FC = () => {
                       {valueInputType === 'text' && (
                         <Form.Select
                           value={valueView}
-                          onChange={(e) => setValueView(e.target.value as 'base64' | 'raw')}
+                          onChange={(e) => setValueView(e.target.value as ViewType)}
                         >
                           <option value={'base64'}>Base64</option>
                           <option value={'raw'}>Raw</option>

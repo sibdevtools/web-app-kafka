@@ -15,7 +15,7 @@ web-app-api = "0.0.6"
 storage-embedded = "0.1.16"
 async-embedded = "0.0.10"
 
-kafka-client-service = "0.0.3"
+kafka-client-service = "0.0.5"
 
 
 [libraries]

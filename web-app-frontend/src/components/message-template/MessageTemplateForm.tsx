@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
-import { Button, Col, Container, Form, Row } from 'react-bootstrap';
-import { ArrowLeft01Icon, FloppyDiskIcon } from 'hugeicons-react';
+import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import { ArrowLeft01Icon, FloppyDiskIcon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
 import { Loader } from '../common/Loader';
 import { Engine, MessageTemplateRq, MessageTemplateRs } from '../../api/message.templates';
 import AceEditor from 'react-ace';
@@ -11,6 +11,7 @@ import { SchemaNode } from './schema-builder/type';
 import { convertToJsonSchema, parseJsonSchema } from './schema-builder/converter';
 
 import '../../constant/ace.imports'
+import { getViewRepresentation, ViewType } from '../../utils/view';
 
 export interface MessageTemplateFormHandle {
   getMessageTemplateRq: () => MessageTemplateRq;
@@ -30,6 +31,12 @@ const EngineToAceMode: Record<Engine, string> = {
   JAVA_TEMPLATE_ENGINE: 'text'
 }
 
+interface HeaderForm {
+  key: string | null;
+  value: string | null;
+  view: ViewType;
+}
+
 export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, MessageTemplateFormHandleProps>(
   ({
      loading,
@@ -42,6 +49,13 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
     const [code, setCode] = useState('');
     const [name, setName] = useState('');
     const [engine, setEngine] = useState<Engine>('FREEMARKER');
+    const [headers, setHeaders] = useState<HeaderForm[]>([
+      {
+        key: null,
+        value: null,
+        view: 'raw'
+      }
+    ]);
     const [template, setTemplate] = useState<string>('');
     const [rootSchema, setRootSchema] = useState<SchemaNode>({
       title: '',
@@ -53,10 +67,21 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
 
     useImperativeHandle(ref, () => ({
       getMessageTemplateRq: (): MessageTemplateRq => {
+        const convertToRecord = (headers: HeaderForm[]): Record<string, string> => {
+          return headers
+            .filter(header => header.key !== null && header.value !== null)
+            .reduce((acc, header) => {
+              if (header.key && header.value) {
+                acc[header.key] = header.value;
+              }
+              return acc;
+            }, {} as Record<string, string>);
+        }
         return {
           code,
           name,
           engine,
+          headers: convertToRecord(headers),
           schema: convertToJsonSchema(rootSchema),
           template: encodeText(template)
         };
@@ -65,6 +90,11 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
         setCode(rs.code);
         setName(rs.name);
         setEngine(rs.engine);
+        setHeaders(Object.entries(rs.headers || {}).map(([key, value]) => ({
+          key: key,
+          value: value,
+          view: 'base64'
+        })))
         setRootSchema(parseJsonSchema(rs.schema));
         setTemplate(tryDecodeToText(rs.template));
       }
@@ -94,10 +124,10 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
               <Form className="mt-4" onSubmit={onSubmit}>
                 <Form.Group controlId="messageTemplateCodeInput">
                   <Row className={'mb-2'}>
-                    <Col md={3}>
+                    <Col md={2}>
                       <Form.Label>Code</Form.Label>
                     </Col>
-                    <Col md={9}>
+                    <Col md={10}>
                       <Form.Control
                         type="text"
                         value={code}
@@ -110,10 +140,10 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
 
                 <Form.Group controlId="messageTemplateNameInput">
                   <Row className={'mb-2'}>
-                    <Col md={3}>
+                    <Col md={2}>
                       <Form.Label>Name</Form.Label>
                     </Col>
-                    <Col md={9}>
+                    <Col md={10}>
                       <Form.Control
                         type="text"
                         value={name}
@@ -126,10 +156,10 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
 
                 <Form.Group controlId="messageTemplateEngineInput">
                   <Row className={'mb-2'}>
-                    <Col md={3}>
+                    <Col md={2}>
                       <Form.Label>Engine</Form.Label>
                     </Col>
-                    <Col md={9}>
+                    <Col md={10}>
                       <Form.Select
                         value={engine}
                         onChange={(e) => setEngine(e.target.value as Engine)}
@@ -149,12 +179,87 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                   </Row>
                 </Form.Group>
 
+                <Form.Group controlId="messageTemplateHeadersInput">
+                  <Row>
+                    <Col md={2}>
+                      <Form.Label>Headers</Form.Label>
+                    </Col>
+                    <Col md={10}>
+                      {headers.map((header, index) => (
+                        <Row className={'mb-2'}>
+                          <InputGroup>
+                            <Form.Control
+                              value={header.key ?? ''}
+                              onChange={(e) => {
+                                const newHeaders = [...headers]
+                                newHeaders[index].key = e.target.value
+                                setHeaders(newHeaders)
+                              }}
+                            />
+                            <InputGroup.Text>=</InputGroup.Text>
+                            <Form.Control
+                              value={getViewRepresentation(header.view, header.value)}
+                              onChange={(e) => {
+                                const newHeaders = [...headers]
+                                const changed = e.target.value
+                                if (!changed) {
+                                  newHeaders[index].value = null
+                                } else if (header.view === 'base64') {
+                                  newHeaders[index].value = changed
+                                } else {
+                                  newHeaders[index].value = encodeText(changed)
+                                }
+                                setHeaders(newHeaders)
+                              }}
+                            />
+                            <Form.Select
+                              value={header.view}
+                              onChange={(e) => {
+                                const newHeaders = [...headers]
+                                newHeaders[index].view = e.target.value as ViewType
+                                setHeaders(newHeaders)
+                              }}
+                            >
+                              <option value={'base64'}>Base64</option>
+                              <option value={'raw'}>Raw</option>
+                            </Form.Select>
+                            <Button
+                              variant="outline-success"
+                              onClick={() => {
+                                const updated = [...headers]
+                                updated.splice(index + 1, 0, {
+                                  key: null,
+                                  value: null,
+                                  view: 'raw'
+                                });
+                                setHeaders(updated)
+                              }}
+                            >
+                              <PlusSignIcon />
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              disabled={headers.length === 1}
+                              onClick={() => {
+                                const newHeaders = headers.filter((_, i) => i !== index);
+                                setHeaders(newHeaders)
+                              }}
+                            >
+                              <MinusSignIcon />
+                            </Button>
+                          </InputGroup>
+                        </Row>
+                      ))}
+                    </Col>
+                  </Row>
+                </Form.Group>
+
                 <Form.Group controlId="messageTemplateEngineInput">
                   <Row className={'mb-2'}>
-                    <Col md={3}>
+                    <Col md={2}>
                       <Form.Label>Schema</Form.Label>
                     </Col>
-                    <Col md={9}>
+                    <Col md={10}>
                       <SchemaFormBuilder
                         node={rootSchema}
                         onChange={setRootSchema}
@@ -166,10 +271,10 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
 
                 <Form.Group controlId="messageTemplateTemplateInput">
                   <Row className={'mb-2'}>
-                    <Col md={3}>
+                    <Col md={2}>
                       <Form.Label>Template</Form.Label>
                     </Col>
-                    <Col md={9}>
+                    <Col md={10}>
                       <AceEditor
                         mode={EngineToAceMode[engine]}
                         theme={settings['aceTheme'].value}

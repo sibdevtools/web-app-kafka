@@ -29,6 +29,7 @@ export interface MessageTemplateRq {
   code: string;
   name: string;
   engine: Engine;
+  headers: Record<string, string> | null;
   schema: Record<string, any>;
   template: string;
 }
@@ -44,6 +45,7 @@ export interface MessageTemplateRs {
   code: string;
   name: string;
   engine: Engine;
+  headers: Record<string, string> | null;
   schema: Record<string, any>;
   template: string;
   createdAt: string;

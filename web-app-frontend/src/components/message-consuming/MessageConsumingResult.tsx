@@ -2,8 +2,8 @@ import { Alert, Col, Form, Row } from 'react-bootstrap';
 import CustomTable from '../common/CustomTable';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { getLastMessages, getMessages, GetMessagesRs, MessageRs } from '../../api/bootstrap.group';
-import { tryDecodeToText } from '../../utils/base64';
 import { MessageConsumedModal } from './MessageConsumedModal';
+import { getViewRepresentation, ViewType } from '../../utils/view';
 
 export interface MessageConsumingResultHandle {
   fetchMessages: (
@@ -23,8 +23,8 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
   ({}: MessageConsumingResultProps, ref) => {
     const [messages, setMessages] = useState<MessageRs[]>([]);
     const [messageLoading, setMessageLoading] = useState(false);
-    const [keyView, setKeyView] = useState<'base64' | 'raw'>('base64');
-    const [valueView, setValueView] = useState<'base64' | 'raw'>('base64');
+    const [keyView, setKeyView] = useState<ViewType>('base64');
+    const [valueView, setValueView] = useState<ViewType>('base64');
     const [error, setError] = useState<string | null>(null);
 
     const [showModal, setShowModal] = useState(false);
@@ -67,30 +67,6 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
       },
     }));
 
-    const getMessageKey = (message: MessageRs): string => {
-      let value = message.key
-      if (!value) {
-        return ''
-      }
-      if (keyView === 'raw') {
-        return tryDecodeToText(value)
-      }
-
-      return value;
-    }
-
-    const getMessageValue = (message: MessageRs): string => {
-      let value = message.value
-      if (!value) {
-        return ''
-      }
-      if (valueView === 'raw') {
-        return tryDecodeToText(value)
-      }
-
-      return value;
-    }
-
     const getValueRepresentation = (value: string): string => {
       if (value.length >= 128) {
         value = value.substring(0, 128) + '...'
@@ -116,7 +92,7 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
               <Col md={9}>
                 <Form.Select
                   value={keyView}
-                  onChange={(e) => setKeyView(e.target.value as 'base64' | 'raw')}
+                  onChange={(e) => setKeyView(e.target.value as ViewType)}
                   required={true}
                 >
                   {['base64', 'raw'].map((it) => (
@@ -136,7 +112,7 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
               <Col md={9}>
                 <Form.Select
                   value={valueView}
-                  onChange={(e) => setValueView(e.target.value as 'base64' | 'raw')}
+                  onChange={(e) => setValueView(e.target.value as ViewType)}
                   required={true}
                 >
                   {['base64', 'raw'].map((it) => (
@@ -160,8 +136,8 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
           ]}
           data={
             messages.map((message, index) => {
-                const key = getMessageKey(message);
-                const value = getMessageValue(message);
+                const key = getViewRepresentation(keyView, message.key);
+                const value = getViewRepresentation(valueView, message.value);
                 return {
                   index: index,
                   partition: `${message.partition}`,
