@@ -7,7 +7,6 @@ import AceEditor from 'react-ace';
 import { loadSettings } from '../../settings/utils';
 import { encodeText, tryDecodeToText } from '../../utils/base64';
 
-
 export interface MessageTemplateFormHandle {
   getMessageTemplateRq: () => MessageTemplateRq;
   changeFormValues: (rs: MessageTemplateRs) => void;
@@ -124,6 +123,9 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                         </option>
                         <option key="JAVA_TEMPLATE_ENGINE" value="JAVA_TEMPLATE_ENGINE">
                           Java Template Engine
+                        </option>
+                        <option key="AVRO" value="AVRO">
+                          Avro
                         </option>
                       </Form.Select>
                     </Col>
