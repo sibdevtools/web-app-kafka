@@ -33,6 +33,16 @@ const SimpleNode: React.FC<SimpleNodeProps> = ({
         </InputGroup>
       </Form.Group>
 
+      <Form.Group className="mb-3">
+        <InputGroup>
+          <InputGroup.Text>Default</InputGroup.Text>
+          <Form.Control
+            value={node.default}
+            onChange={(e) => onChange({ ...node, default: e.target.value })}
+          />
+        </InputGroup>
+      </Form.Group>
+
       {!isRoot && (
         <Form.Group className="mb-3">
           <InputGroup>
