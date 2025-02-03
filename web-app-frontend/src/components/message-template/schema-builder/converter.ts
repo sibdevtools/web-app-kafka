@@ -20,17 +20,26 @@ export function convertToJsonSchema(node: SchemaNode): any {
 
   switch (node.type) {
     case 'string':
+      if (node.default !== undefined && node.default.length > 0) {
+        schema.default = node.default
+      }
       const stringNode = node as StringSchemaNode;
       if (stringNode.minLength !== undefined) schema.minLength = stringNode.minLength;
       if (stringNode.maxLength !== undefined) schema.maxLength = stringNode.maxLength;
       break;
     case 'integer':
     case 'number':
+      if (node.default !== undefined && node.default.length > 0) {
+        schema.default = Number(node.default)
+      }
       const numberNode = node as NumberSchemaNode;
       if (numberNode.minimum !== undefined) schema.minimum = numberNode.minimum;
       if (numberNode.maximum !== undefined) schema.maximum = numberNode.maximum;
       break;
     case 'object':
+      if (node.default !== undefined && node.default.length > 0) {
+        schema.default = JSON.parse(node.default)
+      }
       const objectNode = node as ObjectSchemaNode;
       if (objectNode.properties) {
         schema.properties = objectNode.properties.reduce((acc, prop) => {
@@ -40,16 +49,24 @@ export function convertToJsonSchema(node: SchemaNode): any {
       }
       break;
     case 'array':
+      if (node.default !== undefined && node.default.length > 0) {
+        schema.default = JSON.parse(node.default)
+      }
       const arrayNode = node as ArraySchemaNode;
       if (arrayNode.items) schema.items = convertToJsonSchema(arrayNode.items);
       if (arrayNode.minItems !== undefined) schema.minItems = arrayNode.minItems;
       if (arrayNode.maxItems !== undefined) schema.maxItems = arrayNode.maxItems;
       break;
+    case 'boolean':
+      if (node.default !== undefined && node.default.length > 0) {
+        schema.default = 'true' === node.default
+      }
+      break;
   }
 
   switch (node.specification) {
     case 'enum':
-      if (node.enum) schema.enum = node.enum?.map(it => JSON.parse(it));
+      if (node.enum) schema.enum = node.enum?.filter(it => it.length > 0)?.map(it => JSON.parse(it));
       break;
   }
 
@@ -78,6 +95,7 @@ export function parseJsonSchema(json: any): SchemaNode {
     specification,
     nullable,
     title: json.title || '',
+    default: json.default !== undefined ? JSON.stringify(json.default) : undefined,
   };
 
   switch (specification) {

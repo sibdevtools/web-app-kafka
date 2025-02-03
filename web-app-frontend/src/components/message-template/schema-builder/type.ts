@@ -1,6 +1,7 @@
 // Base interface for all schema nodes
 export interface BaseSchemaNode {
   title: string;
+  default?: string;
   type:  'string' | 'boolean' | 'number' | 'integer' | 'object' | 'array';
   specification: 'none' | 'enum';
   enum?: Array<string>;

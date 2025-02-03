@@ -31,6 +31,14 @@ export const ValueSchemaForm = forwardRef<ValueSchemaFormHandle, ValueSchemaForm
     }));
 
     const renderField = (key: string, node: SchemaNode) => {
+      if (node.default) {
+        if (node.type === 'string' || node.type === 'number' || node.type === 'integer' || node.type === 'boolean') {
+          formData[key] = formData[key] ?? JSON.parse(node.default);
+        } else {
+          formData[key] = formData[key] ?? node.default;
+        }
+      }
+
       switch (node.type) {
         case 'string':
           return (
@@ -45,8 +53,8 @@ export const ValueSchemaForm = forwardRef<ValueSchemaFormHandle, ValueSchemaForm
                     onChange={(e) => handleChange(key, e.target.value)}
                   >
                     {node.enum?.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
+                      <option key={option} value={JSON.parse(option)}>
+                        {JSON.parse(option)}
                       </option>
                     ))}
                   </Form.Select>

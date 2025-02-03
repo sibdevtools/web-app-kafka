@@ -3,12 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import MessageTemplateForm, { MessageTemplateFormHandle } from './MessageTemplateForm';
 import { createMessageTemplate, getMessageTemplate, updateMessageTemplate } from '../../api/message.templates';
 import { contextPath } from '../../constant/common';
+import { Alert, Container } from 'react-bootstrap';
 
 const AddEditMessageTemplate: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { templateId } = useParams();
   const messageTemplateFormRef = useRef<MessageTemplateFormHandle>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (templateId) {
@@ -19,6 +21,7 @@ const AddEditMessageTemplate: React.FC = () => {
   }, [templateId]);
 
   const fetchMessageTemplate = async () => {
+    setError(null);
     setLoading(true);
     if (!(templateId)) {
       setLoading(false);
@@ -30,6 +33,7 @@ const AddEditMessageTemplate: React.FC = () => {
       messageTemplateFormRef?.current?.changeFormValues(body);
     } catch (error) {
       console.error('Failed to fetch message template:', error);
+      setError(`Failed to fetch message template: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -37,6 +41,7 @@ const AddEditMessageTemplate: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     try {
       const messageTemplateData = messageTemplateFormRef?.current?.getMessageTemplateRq();
       if (!messageTemplateData) {
@@ -50,6 +55,7 @@ const AddEditMessageTemplate: React.FC = () => {
       navigate(`${contextPath}v1/message-templates`);
     } catch (error) {
       console.error('Failed to submit message template:', error);
+      setError(`Failed to submit message template: ${error}`);
     }
   };
 
@@ -58,13 +64,23 @@ const AddEditMessageTemplate: React.FC = () => {
   };
 
   return (
-    <MessageTemplateForm
-      ref={messageTemplateFormRef}
-      loading={loading}
-      onSubmit={handleSubmit}
-      isEditMode={!!templateId}
-      navigateBack={navigateBack}
-    />
+    <>
+      {error && (
+        <Container>
+          <Alert variant="danger" onClose={() => setError(null)} dismissible>
+            {error}
+          </Alert>
+        </Container>
+      )
+      }
+      <MessageTemplateForm
+        ref={messageTemplateFormRef}
+        loading={loading}
+        onSubmit={handleSubmit}
+        isEditMode={!!templateId}
+        navigateBack={navigateBack}
+      />
+    </>
   );
 };
 
