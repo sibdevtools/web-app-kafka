@@ -12,10 +12,11 @@ localization-api = "0.0.7"
 error-api = "0.0.16"
 web-app-api = "0.0.6"
 
+session-embedded = "0.0.10"
 storage-embedded = "0.1.16"
 async-embedded = "0.0.10"
 
-kafka-client-service = "0.0.7"
+kafka-client-service = "0.0.8"
 
 
 [libraries]
@@ -24,6 +25,7 @@ localization-api = { module = "com.github.sibdevtools:api-localization", version
 error-api = { module = "com.github.sibdevtools:api-error", version.ref = "error-api" }
 web-app-api = { module = "com.github.sibdevtools:api-web-app", version.ref = "web-app-api" }
 
+session-embedded = { module = "com.github.sibdevtools:service-session-embedded", version.ref = "session-embedded" }
 storage-embedded = { module = "com.github.sibdevtools:service-storage-embedded", version.ref = "storage-embedded" }
 async-embedded = { module = "com.github.sibdevtools:service-async-embedded", version.ref = "async-embedded" }
 kafka-client-service = { module = "com.github.sibdevtools:service-kafka-client", version.ref = "kafka-client-service" }

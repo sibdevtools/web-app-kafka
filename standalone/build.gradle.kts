@@ -17,6 +17,7 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
+    implementation(libs.session.embedded)
     implementation(libs.storage.embedded)
     implementation(libs.async.embedded)
 

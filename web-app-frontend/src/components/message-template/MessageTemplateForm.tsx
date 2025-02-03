@@ -26,6 +26,8 @@ type MessageTemplateFormHandleProps = {
 };
 
 const EngineToAceMode: Record<Engine, string> = {
+  JAVA_SCRIPT: 'javascript',
+  PYTHON: 'python',
   AVRO: 'json',
   FREEMARKER: 'text'
 }
@@ -169,6 +171,12 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                         </option>
                         <option key="AVRO" value="AVRO">
                           Avro
+                        </option>
+                        <option key="JAVA_SCRIPT" value="JAVA_SCRIPT">
+                          JavaScript
+                        </option>
+                        <option key="PYTHON" value="PYTHON">
+                          Python
                         </option>
                       </Form.Select>
                     </Col>
