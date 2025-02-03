@@ -95,7 +95,6 @@ export function parseJsonSchema(json: any): SchemaNode {
     specification,
     nullable,
     title: json.title || '',
-    default: json.default !== undefined ? JSON.stringify(json.default) : undefined,
   };
 
   switch (specification) {
@@ -116,6 +115,7 @@ export function parseJsonSchema(json: any): SchemaNode {
         ...baseNode,
         minLength: json.minLength,
         maxLength: json.maxLength,
+        default: json.default !== undefined ? json.default : undefined,
       } as StringSchemaNode
     case 'integer':
     case 'number':
@@ -123,6 +123,7 @@ export function parseJsonSchema(json: any): SchemaNode {
         ...baseNode,
         minimum: json.minimum,
         maximum: json.maximum,
+        default: json.default !== undefined ? `${json.default}` : undefined,
       } as NumberSchemaNode
     case 'object':
       return {
@@ -131,6 +132,7 @@ export function parseJsonSchema(json: any): SchemaNode {
           name,
           schema: parseJsonSchema(prop)
         })),
+        default: json.default !== undefined ? JSON.stringify(json.default) : undefined,
       } as ObjectSchemaNode
     case 'array':
       return {
@@ -138,7 +140,14 @@ export function parseJsonSchema(json: any): SchemaNode {
         items: json.items ? parseJsonSchema(json.items) : initialSchema,
         minItems: json.minItems,
         maxItems: json.maxItems,
+        default: json.default !== undefined ? JSON.stringify(json.default) : undefined,
       } as ArraySchemaNode
+    case 'boolean':
+      return {
+        ...baseNode,
+        default: json.default !== undefined ? `${json.default}` : undefined,
+      } as SchemaNode;
+    default:
   }
 
   return baseNode;

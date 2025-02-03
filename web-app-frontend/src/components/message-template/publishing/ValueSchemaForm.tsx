@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 import { ArraySchemaNode, ObjectSchemaNode, SchemaNode } from '../schema-builder/type';
-import { Add01Icon } from 'hugeicons-react';
+import { Add01Icon, MinusSignIcon } from 'hugeicons-react';
 
 export interface ValueSchemaFormProps {
   schema: ObjectSchemaNode;
@@ -22,6 +22,12 @@ export const ValueSchemaForm = forwardRef<ValueSchemaFormHandle, ValueSchemaForm
       setFormData((prev) => ({ ...prev, [key]: value }));
     };
 
+    const handleDeleteArrayItem = (key: string, index: number) => {
+      const newArray = [...formData[key]];
+      newArray.splice(index, 1);
+      handleChange(key, newArray);
+    };
+
     useImperativeHandle(ref, () => ({
       getValue: (): { [key: string]: any } => {
         return {
@@ -32,10 +38,18 @@ export const ValueSchemaForm = forwardRef<ValueSchemaFormHandle, ValueSchemaForm
 
     const renderField = (key: string, node: SchemaNode) => {
       if (node.default) {
-        if (node.type === 'string' || node.type === 'number' || node.type === 'integer' || node.type === 'boolean') {
-          formData[key] = formData[key] ?? JSON.parse(node.default);
-        } else {
+        if (node.type === 'string') {
           formData[key] = formData[key] ?? node.default;
+        } else if (node.type === 'number' || node.type === 'integer' || node.type === 'boolean') {
+          formData[key] = formData[key] ?? `${node.default}`;
+        } else if (node.type === 'array') {
+          const array = JSON.parse(node.default);
+          formData[key] = formData[key] ?? array;
+          for (let i = 0; i < array.length; i++) {
+            formData[`${key}[${i}]`] = formData[`${key}[${i}]`] ?? array[i];
+          }
+        } else {
+          formData[key] = formData[key] ?? JSON.parse(node.default);
         }
       }
 
@@ -125,9 +139,16 @@ export const ValueSchemaForm = forwardRef<ValueSchemaFormHandle, ValueSchemaForm
             <div className={'mb-2'} key={key}>
               <h4>{arrayNode.title}</h4>
               {Array.from({ length: formData[key]?.length || 0 }).map((_, index) => (
-                <div key={index}>
-                  {renderField(`${key}[${index}]`, arrayNode.items!)}
-                </div>
+                <Row key={index}>
+                  <Col md={11}>
+                    {renderField(`${key}[${index}]`, arrayNode.items!)}
+                  </Col>
+                  <Col md={1}>
+                    <Button variant="danger" onClick={() => handleDeleteArrayItem(key, index)}>
+                      <MinusSignIcon />
+                    </Button>
+                  </Col>
+                </Row>
               ))}
               <Button onClick={() => handleChange(key, [...(formData[key] || []), undefined])}>
                 <Add01Icon />
