@@ -1,13 +1,17 @@
+import 'ace-builds/src-min-noconflict/mode-javascript'
 import 'ace-builds/src-min-noconflict/mode-json'
 import 'ace-builds/src-min-noconflict/mode-xml'
 import 'ace-builds/src-min-noconflict/mode-text'
 import 'ace-builds/src-min-noconflict/mode-yaml'
+import 'ace-builds/src-min-noconflict/mode-python'
 import 'ace-builds/src-min-noconflict/mode-protobuf'
 
+import 'ace-builds/src-min-noconflict/snippets/javascript'
 import 'ace-builds/src-min-noconflict/snippets/json'
 import 'ace-builds/src-min-noconflict/snippets/xml'
 import 'ace-builds/src-min-noconflict/snippets/text'
 import 'ace-builds/src-min-noconflict/snippets/yaml'
+import 'ace-builds/src-min-noconflict/snippets/python'
 import 'ace-builds/src-min-noconflict/snippets/protobuf'
 
 import 'ace-builds/src-min-noconflict/theme-monokai';
