@@ -27,8 +27,7 @@ type MessageTemplateFormHandleProps = {
 
 const EngineToAceMode: Record<Engine, string> = {
   AVRO: 'json',
-  FREEMARKER: 'text',
-  JAVA_TEMPLATE_ENGINE: 'text'
+  FREEMARKER: 'text'
 }
 
 interface HeaderForm {
@@ -167,9 +166,6 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                       >
                         <option key="FREEMARKER" value="FREEMARKER">
                           FreeMarker
-                        </option>
-                        <option key="JAVA_TEMPLATE_ENGINE" value="JAVA_TEMPLATE_ENGINE">
-                          Java Template Engine
                         </option>
                         <option key="AVRO" value="AVRO">
                           Avro
