@@ -66,7 +66,7 @@ export function convertToJsonSchema(node: SchemaNode): any {
 
   switch (node.specification) {
     case 'enum':
-      if (node.enum) schema.enum = node.enum?.map(it => JSON.parse(it));
+      if (node.enum) schema.enum = node.enum?.filter(it => it.length > 0)?.map(it => JSON.parse(it));
       break;
   }
 

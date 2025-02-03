@@ -18,7 +18,7 @@ const ApplicationLayout: React.FC = () => {
           </Nav.Link>
         </Nav.Item>
       </Nav>
-      <main className="d-flex flex-nowrap">
+      <main className="flex-nowrap">
         <Outlet />
       </main>
     </Container>
