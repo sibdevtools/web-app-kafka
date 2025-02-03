@@ -51,7 +51,11 @@ export const ValueSchemaForm = forwardRef<ValueSchemaFormHandle, ValueSchemaForm
                   <Form.Select
                     value={formData[key] || ''}
                     onChange={(e) => handleChange(key, e.target.value)}
+                    required={true}
                   >
+                    {!node.default && (
+                      <option value={''}></option>
+                    )}
                     {node.enum?.map((option) => (
                       <option key={option} value={JSON.parse(option)}>
                         {JSON.parse(option)}
