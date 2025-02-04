@@ -71,15 +71,14 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                 <thead className={'table-dark'}>
                 <tr>
                   <th>Key</th>
-                  <th>Value</th>
                   <th>Value View</th>
+                  <th>Value</th>
                 </tr>
                 </thead>
                 <tbody>
                 {headers.map(([key, value], index) => (
                   <tr>
                     <td>{key}</td>
-                    <td>{headerViews[index] === 'base64' ? value : tryDecodeToText(value)}</td>
                     <td>
                       <Form.Select
                         value={headerViews[index]}
@@ -97,6 +96,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                         ))}
                       </Form.Select>
                     </td>
+                    <td>{headerViews[index] === 'base64' ? value : tryDecodeToText(value)}</td>
                   </tr>
                 ))}
                 </tbody>
