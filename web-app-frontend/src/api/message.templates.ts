@@ -7,7 +7,7 @@ const messageTemplate = axios.create({
   },
 });
 
-export type Engine = 'FREEMARKER' | 'AVRO' | 'JAVA_SCRIPT' | 'PYTHON';
+export type Engine = 'FREEMARKER' | 'AVRO' | 'JAVA_SCRIPT' | 'PYTHON' | 'JSON';
 
 export interface MessageTemplateShortRs {
   id: number;
