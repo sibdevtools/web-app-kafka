@@ -26,6 +26,7 @@ type MessageTemplateFormHandleProps = {
 };
 
 const EngineToAceMode: Record<Engine, string> = {
+  JSON: 'none',
   JAVA_SCRIPT: 'javascript',
   PYTHON: 'python',
   AVRO: 'json',
@@ -84,7 +85,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
           engine,
           headers: convertToRecord(headers),
           schema: convertToJsonSchema(rootSchema),
-          template: encodeText(template)
+          template: EngineToAceMode[engine] === 'none' ? '' : encodeText(template)
         };
       },
       changeFormValues: (rs: MessageTemplateRs) => {
@@ -177,6 +178,9 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                         </option>
                         <option key="PYTHON" value="PYTHON">
                           Python
+                        </option>
+                        <option key="JSON" value="JSON">
+                          JSON
                         </option>
                       </Form.Select>
                     </Col>
@@ -273,42 +277,44 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                   </Row>
                 </Form.Group>
 
-                <Form.Group controlId="messageTemplateTemplateInput">
-                  <Row className={'mb-2'}>
-                    <Col md={2}>
-                      <Form.Label>Template</Form.Label>
-                    </Col>
-                    <Col md={10}>
-                      <AceEditor
-                        mode={EngineToAceMode[engine]}
-                        theme={settings['aceTheme'].value}
-                        name={`schema-representation`}
-                        value={template}
-                        onChange={setTemplate}
-                        className={`rounded border`}
-                        style={{
-                          resize: 'vertical',
-                          overflow: 'auto',
-                          height: '480px',
-                          minHeight: '200px',
-                        }}
-                        fontSize={14}
-                        width="100%"
-                        height="480px"
-                        showPrintMargin={true}
-                        showGutter={true}
-                        highlightActiveLine={true}
-                        wrapEnabled={true}
-                        setOptions={{
-                          showLineNumbers: true,
-                          wrap: true,
-                          useWorker: false,
-                        }}
-                        editorProps={{ $blockScrolling: true }}
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
+                {EngineToAceMode[engine] !== 'none' && (
+                  <Form.Group controlId="messageTemplateTemplateInput">
+                    <Row className={'mb-2'}>
+                      <Col md={2}>
+                        <Form.Label>Template</Form.Label>
+                      </Col>
+                      <Col md={10}>
+                        <AceEditor
+                          mode={EngineToAceMode[engine]}
+                          theme={settings['aceTheme'].value}
+                          name={`schema-representation`}
+                          value={template}
+                          onChange={setTemplate}
+                          className={`rounded border`}
+                          style={{
+                            resize: 'vertical',
+                            overflow: 'auto',
+                            height: '480px',
+                            minHeight: '200px',
+                          }}
+                          fontSize={14}
+                          width="100%"
+                          height="480px"
+                          showPrintMargin={true}
+                          showGutter={true}
+                          highlightActiveLine={true}
+                          wrapEnabled={true}
+                          setOptions={{
+                            showLineNumbers: true,
+                            wrap: true,
+                            useWorker: false,
+                          }}
+                          editorProps={{ $blockScrolling: true }}
+                        />
+                      </Col>
+                    </Row>
+                  </Form.Group>
+                )}
 
                 <Row>
                   <Col className="d-flex justify-content-end">
