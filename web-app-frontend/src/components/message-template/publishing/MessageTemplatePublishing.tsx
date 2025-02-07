@@ -37,7 +37,7 @@ const MessageTemplatePublishing: React.FC = () => {
   const [sending, setSending] = useState<boolean>(false);
   const valueSchemaFormRef = useRef<ValueSchemaFormHandle>(null);
 
-  const [groupId, setGroupId] = useState<number>(0);
+  const [groupId, setGroupId] = useState<number>(-1);
   const [topic, setTopic] = useState<string>('');
   const [partition, setPartition] = useState<number | null>(null);
   const [timestamp, setTimestamp] = useState<number | null>(null);
@@ -71,11 +71,6 @@ const MessageTemplatePublishing: React.FC = () => {
       if (response.data.success) {
         const groupRs = response.data.body;
         setGroups(groupRs);
-        if (groupRs.length > 0) {
-          const groupId = groupRs[0].id;
-          setGroupId(groupId);
-          await fetchTopics(groupId);
-        }
       } else {
         setError('Failed to fetch bootstrap groups');
         return;
@@ -253,7 +248,9 @@ const MessageTemplatePublishing: React.FC = () => {
                         await fetchTopics(groupId);
                       }}
                       required={true}
+                      disabled={groupsLoading || topicsLoading}
                     >
+                      <option key={-1} value={-1}>Choose group</option>
                       {groups.map((group) => (
                         <option key={group.id} value={group.id}>{group.name}</option>
                       ))}
@@ -281,6 +278,7 @@ const MessageTemplatePublishing: React.FC = () => {
                         list={'topics-suggestions'}
                         onChange={(e) => setTopic(e.target.value)}
                         required={true}
+                        disabled={groupsLoading || topicsLoading}
                       />
                       <datalist id="topics-suggestions">
                         {topics.map((topic, i) => (
