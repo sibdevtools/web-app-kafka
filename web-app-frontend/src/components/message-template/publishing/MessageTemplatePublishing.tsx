@@ -13,6 +13,7 @@ import ValueSchemaForm, { ValueSchemaFormHandle } from './ValueSchemaForm';
 import { parseJsonSchema } from '../schema-builder/converter';
 import { ObjectSchemaNode } from '../schema-builder/type';
 import { getViewRepresentation, ViewType } from '../../../utils/view';
+import SuggestiveInput from '../../common/SuggestiveInput';
 
 interface HeaderForm {
   key: string | null;
@@ -244,6 +245,9 @@ const MessageTemplatePublishing: React.FC = () => {
                           return
                         }
                         const groupId = Number(rawGroupId)
+                        if (groupId === -1) {
+                          return
+                        }
                         setGroupId(groupId)
                         await fetchTopics(groupId);
                       }}
@@ -273,18 +277,18 @@ const MessageTemplatePublishing: React.FC = () => {
                       <Form.Label>Topic</Form.Label>
                     </Col>
                     <Col md={10}>
-                      <Form.Control
-                        value={topic ?? ''}
-                        list={'topics-suggestions'}
-                        onChange={(e) => setTopic(e.target.value)}
-                        required={true}
-                        disabled={groupsLoading || topicsLoading}
+                      <SuggestiveInput
+                        suggestions={topics}
+                        maxSuggestions={5}
+                        mode="strict"
+                        onFilter={
+                          it => {
+                            const key = it.toLowerCase();
+                            return topics.filter(it => it.includes(key))
+                          }
+                        }
+                        onChange={it => setTopic(it)}
                       />
-                      <datalist id="topics-suggestions">
-                        {topics.map((topic, i) => (
-                          <option key={i} value={topic} />
-                        ))}
-                      </datalist>
                     </Col>
                   </Row>
                 </Form.Group>
