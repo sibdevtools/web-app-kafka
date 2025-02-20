@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getTopics } from '../../api/bootstrap.group';
 import { contextPath } from '../../constant/common';
 import { Loader } from '../common/Loader';
-import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, InputGroup, Row, Spinner } from 'react-bootstrap';
 import { ArrowLeft01Icon, Search01Icon } from 'hugeicons-react';
 import MessageConsumingResult, { MessageConsumingResultHandle } from './MessageConsumingResult';
 import SuggestiveInput from '../common/SuggestiveInput';
@@ -19,6 +19,7 @@ const MessageConsuming: React.FC = () => {
   const [maxMessages, setMaxMessages] = useState<number>(10);
   const [maxTimeout, setMaxTimeout] = useState<number>(10000);
   const [mode, setMode] = useState<'earliest' | 'latest'>('earliest');
+  const [searching, setSearching] = useState(false);
 
   const messageConsumingResultRef = useRef<MessageConsumingResultHandle>(null);
 
@@ -65,7 +66,9 @@ const MessageConsuming: React.FC = () => {
       setError('Choose existed topic');
       return;
     }
-    messageConsumingResultRef?.current?.fetchMessages(groupId, topic, maxMessages, maxTimeout, mode);
+    setSearching(true);
+    await messageConsumingResultRef?.current?.fetchMessages(groupId, topic, maxMessages, maxTimeout, mode);
+    setSearching(false);
   };
 
   if (loading) {
@@ -184,9 +187,11 @@ const MessageConsuming: React.FC = () => {
                   <Button
                     variant="primary"
                     type="submit"
+                    disabled={searching}
                     title={'Search'}
                   >
-                    <Search01Icon />
+                    {!searching && (<Search01Icon />)}
+                    {searching && (<Spinner variant={'light'} animation={'border'} size={'sm'} />)}
                   </Button>
                 </Col>
               </Row>

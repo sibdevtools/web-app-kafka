@@ -156,37 +156,6 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                   </Row>
                 </Form.Group>
 
-                <Form.Group controlId="messageTemplateEngineInput">
-                  <Row className={'mb-2'}>
-                    <Col md={2}>
-                      <Form.Label>Engine</Form.Label>
-                    </Col>
-                    <Col md={10}>
-                      <Form.Select
-                        value={engine}
-                        onChange={(e) => setEngine(e.target.value as Engine)}
-                        required
-                      >
-                        <option key="FREEMARKER" value="FREEMARKER">
-                          FreeMarker
-                        </option>
-                        <option key="AVRO" value="AVRO">
-                          Avro
-                        </option>
-                        <option key="JAVA_SCRIPT" value="JAVA_SCRIPT">
-                          JavaScript
-                        </option>
-                        <option key="PYTHON" value="PYTHON">
-                          Python
-                        </option>
-                        <option key="JSON" value="JSON">
-                          JSON
-                        </option>
-                      </Form.Select>
-                    </Col>
-                  </Row>
-                </Form.Group>
-
                 <Form.Group controlId="messageTemplateHeadersInput">
                   <Row>
                     <Col md={2}>
@@ -262,7 +231,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                   </Row>
                 </Form.Group>
 
-                <Form.Group controlId="messageTemplateEngineInput">
+                <Form.Group controlId="messageTemplateSchemaInput">
                   <Row className={'mb-2'}>
                     <Col md={2}>
                       <Form.Label>Schema</Form.Label>
@@ -273,6 +242,37 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                         onChange={setRootSchema}
                         isRoot={true}
                       />
+                    </Col>
+                  </Row>
+                </Form.Group>
+
+                <Form.Group controlId="messageTemplateEngineInput">
+                  <Row className={'mb-2'}>
+                    <Col md={2}>
+                      <Form.Label>Engine</Form.Label>
+                    </Col>
+                    <Col md={10}>
+                      <Form.Select
+                        value={engine}
+                        onChange={(e) => setEngine(e.target.value as Engine)}
+                        required
+                      >
+                        <option key="FREEMARKER" value="FREEMARKER">
+                          FreeMarker
+                        </option>
+                        <option key="AVRO" value="AVRO">
+                          Avro
+                        </option>
+                        <option key="JAVA_SCRIPT" value="JAVA_SCRIPT">
+                          JavaScript
+                        </option>
+                        <option key="PYTHON" value="PYTHON">
+                          Python
+                        </option>
+                        <option key="JSON" value="JSON">
+                          JSON
+                        </option>
+                      </Form.Select>
                     </Col>
                   </Row>
                 </Form.Group>

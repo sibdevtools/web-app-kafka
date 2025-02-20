@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
-import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, FloppyDiskIcon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
 import { Loader } from '../common/Loader';
 import { BootstrapGroupRq, BootstrapGroupRs } from '../../api/bootstrap.group';
@@ -15,6 +15,8 @@ type BootstrapGroupFormHandleProps = {
   onSubmit: (e: React.FormEvent) => void;
   isEditMode: boolean;
   navigateBack: () => void;
+  error: string | null;
+  setError: (text: string | null) => void;
 };
 
 export const BootstrapGroupForm = forwardRef<BootstrapGroupFormHandle, BootstrapGroupFormHandleProps>(
@@ -22,7 +24,9 @@ export const BootstrapGroupForm = forwardRef<BootstrapGroupFormHandle, Bootstrap
      loading,
      onSubmit,
      isEditMode,
-     navigateBack
+     navigateBack,
+     error,
+     setError
    }: BootstrapGroupFormHandleProps, ref) => {
     const [code, setCode] = useState('');
     const [name, setName] = useState('');
@@ -66,6 +70,12 @@ export const BootstrapGroupForm = forwardRef<BootstrapGroupFormHandle, Bootstrap
           <Loader />
           :
           <Row>
+            {error && (
+              <Alert variant="danger" onClose={() => setError(null)} dismissible>
+                {error}
+              </Alert>
+            )
+            }
             <Col md={{ span: 10, offset: 1 }}>
               <Form className="mt-4" onSubmit={onSubmit}>
                 <Form.Group controlId="bootstrapGroupCodeInput">
@@ -134,8 +144,22 @@ export const BootstrapGroupForm = forwardRef<BootstrapGroupFormHandle, Bootstrap
                             <Form.Control
                               value={it || ''}
                               onChange={(e) => {
+                                const value = e.target.value
                                 const updated = [...bootstrapServers]
-                                updated[index] = e.target.value
+                                const values = value.split(',')
+                                if (values.length === 1) {
+                                  updated[index] = value
+                                } else {
+                                  for (let i = 0; i < values.length; i++) {
+                                    const it = values[i].trim()
+                                    if (it.length === 0) continue;
+                                    if (i === 0) {
+                                      updated[index] = it;
+                                    } else {
+                                      updated.splice(index + i, 0, it);
+                                    }
+                                  }
+                                }
                                 setBootstrapServers(updated)
                               }}
                             />

@@ -4,6 +4,9 @@ import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { getLastMessages, getMessages, GetMessagesRs, MessageRs } from '../../api/bootstrap.group';
 import { MessageConsumedModal } from './MessageConsumedModal';
 import { getViewRepresentation, ViewType } from '../../utils/view';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import 'react-syntax-highlighter/dist/esm/languages/hljs/json';
 
 export interface MessageConsumingResultHandle {
   fetchMessages: (
@@ -12,7 +15,7 @@ export interface MessageConsumingResultHandle {
     maxMessages: number,
     maxTimeout: number,
     mode: 'earliest' | 'latest'
-  ) => void;
+  ) => Promise<void>;
 }
 
 export interface MessageConsumingResultProps {
@@ -86,40 +89,30 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
         <Row>
           <Form.Group>
             <Row className={'mb-2'}>
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Label>Key View</Form.Label>
               </Col>
-              <Col md={9}>
+              <Col md={4}>
                 <Form.Select
                   value={keyView}
                   onChange={(e) => setKeyView(e.target.value as ViewType)}
                   required={true}
                 >
-                  {['base64', 'raw'].map((it) => (
-                    <option key={it} value={it}>
-                      {it}
-                    </option>
-                  ))}
+                  <option value={'base64'}>Base64</option>
+                  <option value={'raw'}>Raw</option>
                 </Form.Select>
               </Col>
-            </Row>
-          </Form.Group>
-          <Form.Group>
-            <Row className={'mb-2'}>
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Label>Value View</Form.Label>
               </Col>
-              <Col md={9}>
+              <Col md={4}>
                 <Form.Select
                   value={valueView}
                   onChange={(e) => setValueView(e.target.value as ViewType)}
                   required={true}
                 >
-                  {['base64', 'raw'].map((it) => (
-                    <option key={it} value={it}>
-                      {it}
-                    </option>
-                  ))}
+                  <option value={'base64'}>Base64</option>
+                  <option value={'raw'}>Raw</option>
                 </Form.Select>
               </Col>
             </Row>
@@ -156,9 +149,13 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
                     value: key
                   },
                   value: {
-                    representation: <code>
-                      {getValueRepresentation(value)}
-                    </code>,
+                    representation: <>
+                      {value && (
+                        <SyntaxHighlighter language={'json'} style={docco}>
+                          {getValueRepresentation(value)}
+                        </SyntaxHighlighter>
+                      )}
+                    </>,
                     value: value
                   }
                 }

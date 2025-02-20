@@ -6,7 +6,7 @@ import React from 'react';
 const ApplicationLayout: React.FC = () => {
   return (
     <Container fluid className="p-0">
-      <Nav variant="tabs" defaultActiveKey="/" className="mb-3" fill>
+      <Nav variant="tabs" defaultActiveKey={contextPath} className="mb-3" fill>
         <Nav.Item>
           <Nav.Link as={Link} to={contextPath} eventKey="bootstrap-groups">
             Bootstrap Groups
