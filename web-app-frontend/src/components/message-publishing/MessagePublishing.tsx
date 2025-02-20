@@ -5,7 +5,7 @@ import { getTopics, RecordMetadataDto, sendMessage } from '../../api/bootstrap.g
 import { contextPath, TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
 import { Loader } from '../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
-import { ArrowLeft01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
+import { ArrowLeft01Icon, MagicWand01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
 import { encode, encodeText } from '../../utils/base64';
 import { loadSettings } from '../../settings/utils';
 
@@ -237,6 +237,7 @@ const MessagePublishing: React.FC = () => {
                   <Form.Control
                     value={partition ?? ''}
                     type={'number'}
+                    min={0}
                     onChange={(e) => setPartition(e.target.value ? Number(e.target.value) : null)}
                   />
                 </Col>
@@ -251,6 +252,7 @@ const MessagePublishing: React.FC = () => {
                   <Form.Control
                     value={timestamp ?? ''}
                     type={'number'}
+                    min={0}
                     onChange={(e) => setTimestamp(e.target.value ? Number(e.target.value) : null)}
                   />
                 </Col>
@@ -394,16 +396,38 @@ const MessagePublishing: React.FC = () => {
                           <option value={'raw'}>Raw</option>
                         </Form.Select>
                       )}
-                      {valueView === 'raw' && (
-                        <Form.Select
-                          value={valueType}
-                          onChange={(e) => setValueType(e.target.value as TextType)}
-                        >
-                          {textTypes.map((type, i) => (
-                            <option key={i} value={type}>{type}</option>
-                          ))}
-                        </Form.Select>
-                      )}
+                      {
+                        valueView === 'raw' && (
+                          <Form.Select
+                            value={valueType}
+                            onChange={(e) => setValueType(e.target.value as TextType)}
+                          >
+                            {textTypes.map((type, i) => (
+                              <option key={i} value={type}>{type}</option>
+                            ))}
+                          </Form.Select>
+                        )
+                      }
+                      {
+                        valueType === 'JSON' && (
+                          <Button
+                            variant="primary"
+                            type="button"
+                            title={'Beautify'}
+                            onClick={() => {
+                              if (!value) {
+                                return;
+                              }
+                              const valueRepresentation = getViewRepresentation(valueView, value)
+                              const json = JSON.parse(valueRepresentation)
+                              const stringified = JSON.stringify(json, null, 4)
+                              setValue(encodeText(stringified))
+                            }}
+                          >
+                            <MagicWand01Icon />
+                          </Button>
+                        )
+                      }
                     </InputGroup>
                   </Row>
                   <Form.Group className={'mb-2'}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BootstrapGroupRs, deleteBootstrapGroup, getAllBootstrapGroup } from '../../api/bootstrap.group';
 import { Loader } from '../common/Loader';
-import { Alert, Button, ButtonGroup, Col, Container, Row } from 'react-bootstrap';
+import { Alert, Button, ButtonGroup, Col, Container, ListGroup, ListGroupItem, Row } from 'react-bootstrap';
 import { contextPath } from '../../constant/common';
 import { PlusSignIcon } from 'hugeicons-react';
 import { useNavigate } from 'react-router-dom';
@@ -98,9 +98,9 @@ const BootstrapGroups: React.FC = () => {
                 },
                 name: group.name,
                 servers: {
-                  representation: <ul>
-                    {group.bootstrapServers.map(it => (<li key={it}>{it}</li>))}
-                  </ul>,
+                  representation: <ListGroup>
+                    {group.bootstrapServers.map(it => (<ListGroupItem key={it}>{it}</ListGroupItem>))}
+                  </ListGroup>,
                   value: group.bootstrapServers.join(', ')
                 },
                 actions: {

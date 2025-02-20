@@ -9,6 +9,7 @@ const AddEditBootstrapGroup: React.FC = () => {
   const navigate = useNavigate();
   const { groupId } = useParams();
   const bootstrapGroupFormRef = useRef<BootstrapGroupFormHandle>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (groupId) {
@@ -42,14 +43,28 @@ const AddEditBootstrapGroup: React.FC = () => {
       if (!bootstrapGroupData) {
         return
       }
+      if (bootstrapGroupData.code.length === 0) {
+        setError('Code are required');
+        return;
+      }
+      if (bootstrapGroupData.name.length === 0) {
+        setError('Name are required');
+        return;
+      }
+      if (bootstrapGroupData.bootstrapServers.length === 0) {
+        setError('Bootstrap servers are required');
+        return;
+      }
       if (groupId) {
         await updateBootstrapGroup(+groupId, bootstrapGroupData);
       } else {
         await createBootstrapGroup(bootstrapGroupData);
       }
+      setError(null);
       navigate(contextPath);
     } catch (error) {
       console.error('Failed to submit bootstrap group:', error);
+      setError(`Failed to submit bootstrap group: ${error}`);
     }
   };
 
@@ -64,6 +79,8 @@ const AddEditBootstrapGroup: React.FC = () => {
       onSubmit={handleSubmit}
       isEditMode={!!groupId}
       navigateBack={navigateBack}
+      error={error}
+      setError={setError}
     />
   );
 };

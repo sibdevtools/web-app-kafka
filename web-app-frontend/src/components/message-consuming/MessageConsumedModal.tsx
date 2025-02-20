@@ -5,7 +5,7 @@ import { tryDecodeToText } from '../../utils/base64';
 import AceEditor from 'react-ace';
 import { TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
 import { loadSettings } from '../../settings/utils';
-import { FloppyDiskIcon, TextWrapIcon } from 'hugeicons-react';
+import { FloppyDiskIcon, MagicWand01Icon, TextWrapIcon } from 'hugeicons-react';
 import { downloadBase64File } from '../../utils/files';
 import { ViewType } from '../../utils/view';
 
@@ -28,6 +28,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
   const [keyView, setKeyView] = useState<ViewType>('base64');
   const [valueView, setValueView] = useState<ViewType>('base64');
   const [valueType, setValueType] = useState<TextType>('Text');
+  const [decodedMessage, setDecodedMessage] = useState<string>('');
 
   useEffect(() => {
     const headerViews = Array<'raw' | 'base64'>(headers.length)
@@ -35,6 +36,8 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
       headerViews[i] = 'base64'
     }
     setHeaderViews(headerViews);
+    const decodedMessage = tryDecodeToText(message.value)
+    setDecodedMessage(decodedMessage)
   }, [message]);
 
   return (
@@ -89,11 +92,8 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                         }}
                         required={true}
                       >
-                        {['base64', 'raw'].map((it) => (
-                          <option key={it} value={it}>
-                            {it}
-                          </option>
-                        ))}
+                        <option value={'base64'}>Base64</option>
+                        <option value={'raw'}>Raw</option>
                       </Form.Select>
                     </td>
                     <td>{headerViews[index] === 'base64' ? value : tryDecodeToText(value)}</td>
@@ -118,11 +118,8 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                   onChange={(e) => setKeyView(e.target.value as ViewType)}
                   required={true}
                 >
-                  {['base64', 'raw'].map((it) => (
-                    <option key={it} value={it}>
-                      {it}
-                    </option>
-                  ))}
+                  <option value={'base64'}>Base64</option>
+                  <option value={'raw'}>Raw</option>
                 </Form.Select>
               </InputGroup>
             </Col>
@@ -139,22 +136,40 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                     onChange={(e) => setValueView(e.target.value as ViewType)}
                     required={true}
                   >
-                    {['base64', 'raw'].map((it) => (
-                      <option key={it} value={it}>
-                        {it}
-                      </option>
-                    ))}
+                    <option value={'base64'}>Base64</option>
+                    <option value={'raw'}>Raw</option>
                   </Form.Select>
-                  {valueView === 'raw' && (
-                    <Form.Select
-                      value={valueType}
-                      onChange={(e) => setValueType(e.target.value as TextType)}
-                    >
-                      {textTypes.map((type, i) => (
-                        <option key={i} value={type}>{type}</option>
-                      ))}
-                    </Form.Select>
-                  )}
+                  {
+                    valueView === 'raw' && (
+                      <Form.Select
+                        value={valueType}
+                        onChange={(e) => setValueType(e.target.value as TextType)}
+                      >
+                        {textTypes.map((type, i) => (
+                          <option key={i} value={type}>{type}</option>
+                        ))}
+                      </Form.Select>
+                    )
+                  }
+
+                  {
+                    valueType === 'JSON' && (
+                      <Button
+                        variant="primary"
+                        type="button"
+                        title={'Beautify'}
+                        onClick={() => {
+                          if (!decodedMessage) {
+                            return;
+                          }
+                          const json = JSON.parse(decodedMessage)
+                          setDecodedMessage(JSON.stringify(json, null, 4))
+                        }}
+                      >
+                        <MagicWand01Icon />
+                      </Button>
+                    )
+                  }
                 </InputGroup>
               </Col>
             </Row>
@@ -187,7 +202,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                   mode={valueView === 'base64' ? 'text' : textTypeAceModeMap.get(valueType) ?? 'text'}
                   theme={settings['aceTheme'].value}
                   name={`valueRepresentation`}
-                  value={(valueView === 'base64' ? message.value : tryDecodeToText(message.value)) ?? ''}
+                  value={(valueView === 'base64' ? message.value : decodedMessage) ?? ''}
                   className={'rounded'}
                   style={{
                     resize: 'vertical',

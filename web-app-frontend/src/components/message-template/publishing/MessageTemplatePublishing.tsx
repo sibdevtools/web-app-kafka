@@ -253,7 +253,7 @@ const MessageTemplatePublishing: React.FC = () => {
                       mode="strict"
                       onChange={async (e) => {
                         const groupId = Number(e.data.id)
-                        if(!groupId || isNaN(groupId)) {
+                        if (!groupId || isNaN(groupId)) {
                           console.warn('Invalid bootstrap group id:', groupId)
                           return
                         }
@@ -305,6 +305,7 @@ const MessageTemplatePublishing: React.FC = () => {
                       <Form.Control
                         value={partition ?? ''}
                         type={'number'}
+                        min={0}
                         onChange={(e) => setPartition(e.target.value ? Number(e.target.value) : null)}
                       />
                     </Col>
@@ -319,6 +320,7 @@ const MessageTemplatePublishing: React.FC = () => {
                       <Form.Control
                         value={timestamp ?? ''}
                         type={'number'}
+                        min={0}
                         onChange={(e) => setTimestamp(e.target.value ? Number(e.target.value) : null)}
                       />
                     </Col>
@@ -342,41 +344,43 @@ const MessageTemplatePublishing: React.FC = () => {
                     </Col>
                   </Row>
                 </Form.Group>
-                <Form.Group>
-                  <Row>
-                    <Col md={2}>
-                      <Form.Label>Template Headers</Form.Label>
-                    </Col>
-                    <Col md={10}>
-                      {templateHeaders.map((header, index) => (
-                        <Row className={'mb-2'}>
-                          <InputGroup>
-                            <Form.Control
-                              value={header.key ?? ''}
-                              readOnly={true}
-                            />
-                            <InputGroup.Text>=</InputGroup.Text>
-                            <Form.Control
-                              value={getViewRepresentation(header.view, header.value)}
-                              readOnly={true}
-                            />
-                            <Form.Select
-                              value={header.view}
-                              onChange={(e) => {
-                                const newHeaders = [...templateHeaders]
-                                newHeaders[index].view = e.target.value as ViewType
-                                setHeaders(newHeaders)
-                              }}
-                            >
-                              <option value={'base64'}>Base64</option>
-                              <option value={'raw'}>Raw</option>
-                            </Form.Select>
-                          </InputGroup>
-                        </Row>
-                      ))}
-                    </Col>
-                  </Row>
-                </Form.Group>
+                {templateHeaders.length > 0 && (
+                  <Form.Group>
+                    <Row>
+                      <Col md={2}>
+                        <Form.Label>Template Headers</Form.Label>
+                      </Col>
+                      <Col md={10}>
+                        {templateHeaders.map((header, index) => (
+                          <Row className={'mb-2'}>
+                            <InputGroup>
+                              <Form.Control
+                                value={header.key ?? ''}
+                                readOnly={true}
+                              />
+                              <InputGroup.Text>=</InputGroup.Text>
+                              <Form.Control
+                                value={getViewRepresentation(header.view, header.value)}
+                                readOnly={true}
+                              />
+                              <Form.Select
+                                value={header.view}
+                                onChange={(e) => {
+                                  const newHeaders = [...templateHeaders]
+                                  newHeaders[index].view = e.target.value as ViewType
+                                  setHeaders(newHeaders)
+                                }}
+                              >
+                                <option value={'base64'}>Base64</option>
+                                <option value={'raw'}>Raw</option>
+                              </Form.Select>
+                            </InputGroup>
+                          </Row>
+                        ))}
+                      </Col>
+                    </Row>
+                  </Form.Group>
+                )}
                 <Form.Group>
                   <Row>
                     <Col md={2}>

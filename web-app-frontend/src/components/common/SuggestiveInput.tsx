@@ -59,19 +59,24 @@ const SuggestiveInput: React.FC<SuggestiveInputProps> = ({
     }
   }, [inputValue]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleValueChange = (value: string): SuggestiveItem[] => {
     setInputValue(value);
 
     const filtered = onFilter(value);
     const sliced = filtered.slice(0, maxSuggestions);
     setFilteredSuggestions(sliced);
     setFilteredSliced(filtered.length < sliced.length);
+    return sliced;
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const sliced = handleValueChange(value)
 
     setShowSuggestions(sliced.length > 0);
 
-    if (filtered.length > 0) {
-      const candidate = filtered[0];
+    if (sliced.length > 0) {
+      const candidate = sliced[0];
       onChange({
         key: candidate.key,
         value: candidate.value,
@@ -85,9 +90,7 @@ const SuggestiveInput: React.FC<SuggestiveInputProps> = ({
   };
 
   const handleSuggestionClick = (suggestion: SuggestiveItem) => {
-    console.log('Clicked suggestion:', suggestion);
-    setInputValue(suggestion.value);
-    setFilteredSuggestions([]);
+    handleValueChange(suggestion.value);
     setShowSuggestions(false);
     onChange(suggestion);
   };
