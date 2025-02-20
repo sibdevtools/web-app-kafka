@@ -1,65 +1,142 @@
-import React, { useState } from 'react';
-import { Form, FormControl, ListGroup } from 'react-bootstrap';
+import React, { useEffect, useRef, useState } from 'react';
+import { FormControl, ListGroup } from 'react-bootstrap';
+import './SuggestiveInput.css';
+
+export interface SuggestiveItem {
+  key: string;
+  value: string;
+  data?: any;
+}
+
+export interface SuggestedItem {
+  key?: string;
+  value: string;
+  data?: any;
+}
 
 interface SuggestiveInputProps {
-  suggestions: string[];
+  suggestions: SuggestiveItem[];
   maxSuggestions?: number;
   mode: 'strict' | 'free';
-  onFilter: (input: string) => string[];
-  onChange: (value: string) => void;
+  itemsToScroll?: number;
+  onFilter?: (input: string) => SuggestiveItem[];
+  onChange: (value: SuggestedItem) => void;
+  placeholder?: string
+  required: boolean
+  disabled?: boolean
+  clarifyText?: string;
 }
 
 const SuggestiveInput: React.FC<SuggestiveInputProps> = ({
                                                            suggestions,
                                                            maxSuggestions = 5,
                                                            mode,
+                                                           itemsToScroll = 5,
                                                            onFilter,
                                                            onChange,
+                                                           placeholder,
+                                                           required,
+                                                           disabled,
+                                                           clarifyText = 'Clarify request'
                                                          }) => {
   const [inputValue, setInputValue] = useState('');
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>(suggestions);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<SuggestiveItem[]>(suggestions);
+  const [filteredSliced, setFilteredSliced] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dropdownWidth, setDropdownWidth] = useState<number | undefined>(undefined);
+
+  if (!onFilter) {
+    onFilter = it => {
+      const substring = it.toLowerCase();
+      return suggestions.filter(it => it.value.includes(substring))
+    }
+  }
+
+  useEffect(() => {
+    if (inputRef.current) {
+      setDropdownWidth(inputRef.current.offsetWidth);
+    }
+  }, [inputValue]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
 
-    const filtered = onFilter(value).slice(0, maxSuggestions);
-    setFilteredSuggestions(filtered);
+    const filtered = onFilter(value);
+    const sliced = filtered.slice(0, maxSuggestions);
+    setFilteredSuggestions(sliced);
+    setFilteredSliced(filtered.length < sliced.length);
 
-    // If mode is 'free', call onChange with the current input value
-    if (mode === 'free') {
-      onChange(value);
+    setShowSuggestions(sliced.length > 0);
+
+    if (filtered.length > 0) {
+      const candidate = filtered[0];
+      onChange({
+        key: candidate.key,
+        value: candidate.value,
+        data: candidate.data
+      })
+    } else if (mode === 'free') {
+      onChange({ value: value });
+    } else {
+      onChange({ value: '' });
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInputValue(suggestion);
+  const handleSuggestionClick = (suggestion: SuggestiveItem) => {
+    console.log('Clicked suggestion:', suggestion);
+    setInputValue(suggestion.value);
     setFilteredSuggestions([]);
+    setShowSuggestions(false);
     onChange(suggestion);
   };
 
+  const handleBlur = () => {
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
   return (
-    <Form>
+    <>
       <FormControl
+        ref={inputRef}
         type="text"
         value={inputValue}
         onChange={handleInputChange}
-        placeholder="Type something..."
+        onFocus={() => setShowSuggestions(filteredSuggestions.length > 0)}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
       />
-      {filteredSuggestions.length > 0 && (
-        <ListGroup>
-          {filteredSuggestions.map((suggestion, index) => (
-            <ListGroup.Item
-              key={index}
-              action
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              {suggestion}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
+      {showSuggestions && (
+        <div
+          className="suggestions-dropdown"
+          style={{ width: dropdownWidth }}
+        >
+          <ListGroup style={{ maxHeight: `${itemsToScroll * 32}px`, overflowY: 'auto' }}>
+            {filteredSuggestions.map((suggestion) => (
+              <ListGroup.Item
+                key={suggestion.key}
+                action
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="suggestion-item"
+              >
+                {suggestion.value}
+              </ListGroup.Item>
+            ))}
+            {filteredSliced && (
+              <ListGroup.Item
+                key={'other-options'}
+                className="suggestion-text text-secondary"
+              >
+                {clarifyText}
+              </ListGroup.Item>
+            )}
+          </ListGroup>
+        </div>
       )}
-    </Form>
+    </>
   );
 };
 

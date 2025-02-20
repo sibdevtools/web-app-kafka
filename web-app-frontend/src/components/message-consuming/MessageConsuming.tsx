@@ -6,6 +6,7 @@ import { Loader } from '../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, Search01Icon } from 'hugeicons-react';
 import MessageConsumingResult, { MessageConsumingResultHandle } from './MessageConsumingResult';
+import SuggestiveInput from '../common/SuggestiveInput';
 
 const MessageConsuming: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,10 @@ const MessageConsuming: React.FC = () => {
     if (!groupId) {
       return
     }
+    if (!topic) {
+      setError('Choose existed topic');
+      return;
+    }
     messageConsumingResultRef?.current?.fetchMessages(groupId, topic, maxMessages, maxTimeout, mode);
   };
 
@@ -100,17 +105,17 @@ const MessageConsuming: React.FC = () => {
                   <Form.Label>Topic</Form.Label>
                 </Col>
                 <Col md={9}>
-                  <Form.Select
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
+                  <SuggestiveInput
+                    suggestions={topics.map(it => {
+                      return {
+                        key: `topic-${it}`, value: it
+                      }
+                    })}
+                    maxSuggestions={5}
+                    mode="strict"
+                    onChange={it => setTopic(it.value)}
                     required={true}
-                  >
-                    {topics.map((topic) => (
-                      <option key={topic} value={topic}>
-                        {topic}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  />
                 </Col>
               </Row>
             </Form.Group>
