@@ -12,6 +12,7 @@ import { loadSettings } from '../../settings/utils';
 import '../../constant/ace.imports'
 import { MessagePublishedModal } from './MessagePublishedModal';
 import { getViewRepresentation, ViewType } from '../../utils/view';
+import SuggestiveInput from '../common/SuggestiveInput';
 
 interface HeaderForm {
   key: string | null;
@@ -213,17 +214,17 @@ const MessagePublishing: React.FC = () => {
                   <Form.Label>Topic</Form.Label>
                 </Col>
                 <Col md={10}>
-                  <Form.Control
-                    value={topic ?? ''}
-                    list={'topics-suggestions'}
-                    onChange={(e) => setTopic(e.target.value)}
+                  <SuggestiveInput
+                    suggestions={topics.map(it => {
+                      return {
+                        key: `topic-${it}`, value: it
+                      }
+                    })}
+                    maxSuggestions={5}
+                    mode="free"
+                    onChange={it => setTopic(it.value)}
                     required={true}
                   />
-                  <datalist id="topics-suggestions">
-                    {topics.map((topic, i) => (
-                      <option key={i} value={topic} />
-                    ))}
-                  </datalist>
                 </Col>
               </Row>
             </Form.Group>

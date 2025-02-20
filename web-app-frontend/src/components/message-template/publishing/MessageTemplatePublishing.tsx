@@ -13,6 +13,7 @@ import ValueSchemaForm, { ValueSchemaFormHandle } from './ValueSchemaForm';
 import { parseJsonSchema } from '../schema-builder/converter';
 import { ObjectSchemaNode } from '../schema-builder/type';
 import { getViewRepresentation, ViewType } from '../../../utils/view';
+import SuggestiveInput from '../../common/SuggestiveInput';
 
 interface HeaderForm {
   key: string | null;
@@ -161,6 +162,14 @@ const MessageTemplatePublishing: React.FC = () => {
         }, {} as Record<string, string>);
     }
     try {
+      if (!groupId || groupId === -1) {
+        setError('Choose a bootstrap group');
+        return
+      }
+      if (!topic || topic === '') {
+        setError('Choose a valid topic');
+        return
+      }
       setSending(true);
       const input = valueSchemaFormRef?.current?.getValue() ?? {}
       const rqHeaders = convertToRecord(headers)
@@ -236,25 +245,24 @@ const MessageTemplatePublishing: React.FC = () => {
                     <Form.Label>Bootstrap Group</Form.Label>
                   </Col>
                   <Col md={10}>
-                    <Form.Select
-                      value={groupId}
+                    <SuggestiveInput
+                      suggestions={groups.map(it => {
+                        return { key: `bootstrap-group-${it.id}`, value: it.name, data: it }
+                      })}
+                      maxSuggestions={5}
+                      mode="strict"
                       onChange={async (e) => {
-                        const rawGroupId = e.target.value;
-                        if (!rawGroupId) {
+                        const groupId = Number(e.data.id)
+                        if(!groupId || isNaN(groupId)) {
+                          console.warn('Invalid bootstrap group id:', groupId)
                           return
                         }
-                        const groupId = Number(rawGroupId)
                         setGroupId(groupId)
                         await fetchTopics(groupId);
                       }}
                       required={true}
                       disabled={groupsLoading || topicsLoading}
-                    >
-                      <option key={-1} value={-1}>Choose group</option>
-                      {groups.map((group) => (
-                        <option key={group.id} value={group.id}>{group.name}</option>
-                      ))}
-                    </Form.Select>
+                    />
                   </Col>
                 </Row>
               </Form.Group>
@@ -273,18 +281,18 @@ const MessageTemplatePublishing: React.FC = () => {
                       <Form.Label>Topic</Form.Label>
                     </Col>
                     <Col md={10}>
-                      <Form.Control
-                        value={topic ?? ''}
-                        list={'topics-suggestions'}
-                        onChange={(e) => setTopic(e.target.value)}
+                      <SuggestiveInput
+                        suggestions={topics.map(it => {
+                          return {
+                            key: `topic-${it}`, value: it
+                          }
+                        })}
+                        maxSuggestions={5}
+                        mode="free"
+                        onChange={it => setTopic(it.value)}
                         required={true}
-                        disabled={groupsLoading || topicsLoading}
+                        disabled={topicsLoading || topics.length === 0}
                       />
-                      <datalist id="topics-suggestions">
-                        {topics.map((topic, i) => (
-                          <option key={i} value={topic} />
-                        ))}
-                      </datalist>
                     </Col>
                   </Row>
                 </Form.Group>
