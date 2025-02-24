@@ -12,6 +12,7 @@ import { convertToJsonSchema, parseJsonSchema } from './schema-builder/converter
 
 import '../../constant/ace.imports'
 import { getViewRepresentation, ViewType } from '../../utils/view';
+import CodeDocumentation from './CodeDocumentation';
 
 export interface MessageTemplateFormHandle {
   getMessageTemplateRq: () => MessageTemplateRq;
@@ -316,7 +317,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                   </Form.Group>
                 )}
 
-                <Row>
+                <Row className={'mb-2'}>
                   <Col className="d-flex justify-content-end">
                     <Button
                       variant="primary"
@@ -327,6 +328,12 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                     </Button>
                   </Col>
                 </Row>
+
+                {(engine === 'PYTHON' || engine === 'JAVA_SCRIPT') && (
+                  <Row>
+                    <CodeDocumentation mode={engine === 'PYTHON' ? 'python' : 'javascript'} />
+                  </Row>
+                )}
               </Form>
             </Col>
           </Row>

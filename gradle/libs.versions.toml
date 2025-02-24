@@ -16,7 +16,7 @@ session-embedded = "0.0.10"
 storage-embedded = "0.1.16"
 async-embedded = "0.0.10"
 
-kafka-client-service = "0.0.13"
+kafka-client-service = "0.0.15"
 
 
 [libraries]
