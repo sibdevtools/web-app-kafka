@@ -4,10 +4,9 @@ import { MessageRs } from '../../api/bootstrap.group';
 import { tryDecodeToText } from '../../utils/base64';
 import AceEditor from 'react-ace';
 import { TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
-import { loadSettings } from '../../settings/utils';
 import { FloppyDiskIcon, MagicWand01Icon, TextWrapIcon } from 'hugeicons-react';
-import { downloadBase64File } from '../../utils/files';
 import { ViewType } from '../../utils/view';
+import { Files, Settings } from '@sibdevtools/frontend-common';
 
 export interface MessageConsumedModalProps {
   showModal: boolean;
@@ -20,7 +19,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                                                                             setShowModal,
                                                                             message
                                                                           }) => {
-  const settings = loadSettings();
+  const settings = Settings.load();
   const headers = Object.entries(message.headers)
   const [isWordWrapEnabled, setIsWordWrapEnabled] = useState(true);
 
@@ -187,7 +186,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                   </Button>
                   <Button
                     variant="outline-primary"
-                    onClick={() => downloadBase64File(message.value ?? '', `message.${message.partition}.${message.offset}.bin`, 'text/plain')}
+                    onClick={() => Files.download(message.value ?? '', `message.${message.partition}.${message.offset}.bin`)}
                     title={'Save'}
                   >
                     <FloppyDiskIcon />
@@ -200,7 +199,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
               <Col md={10}>
                 <AceEditor
                   mode={valueView === 'base64' ? 'text' : textTypeAceModeMap.get(valueType) ?? 'text'}
-                  theme={settings['aceTheme'].value}
+                  theme={settings['aceTheme']}
                   name={`valueRepresentation`}
                   value={(valueView === 'base64' ? message.value : decodedMessage) ?? ''}
                   className={'rounded'}

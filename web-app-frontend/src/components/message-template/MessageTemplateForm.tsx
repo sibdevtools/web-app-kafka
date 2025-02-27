@@ -1,11 +1,9 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, FloppyDiskIcon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
-import { Loader } from '../common/Loader';
 import { Engine, MessageTemplateRq, MessageTemplateRs } from '../../api/message.templates';
 import AceEditor from 'react-ace';
-import { loadSettings } from '../../settings/utils';
-import { encodeText, tryDecodeToText } from '../../utils/base64';
+import { tryDecodeToText } from '../../utils/base64';
 import SchemaFormBuilder from './schema-builder/SchemaFormBuilder';
 import { SchemaNode } from './schema-builder/type';
 import { convertToJsonSchema, parseJsonSchema } from './schema-builder/converter';
@@ -13,6 +11,7 @@ import { convertToJsonSchema, parseJsonSchema } from './schema-builder/converter
 import '../../constant/ace.imports'
 import { getViewRepresentation, ViewType } from '../../utils/view';
 import CodeDocumentation from './CodeDocumentation';
+import { Base64, Loader, Settings } from '@sibdevtools/frontend-common';
 
 export interface MessageTemplateFormHandle {
   getMessageTemplateRq: () => MessageTemplateRq;
@@ -47,7 +46,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
      isEditMode,
      navigateBack
    }: MessageTemplateFormHandleProps, ref) => {
-    const settings = loadSettings();
+    const settings = Settings.load();
 
     const [code, setCode] = useState('');
     const [name, setName] = useState('');
@@ -86,7 +85,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
           engine,
           headers: convertToRecord(headers),
           schema: convertToJsonSchema(rootSchema),
-          template: EngineToAceMode[engine] === 'none' ? '' : encodeText(template)
+          template: EngineToAceMode[engine] === 'none' ? '' : Base64.Encoder.text2text(template)
         };
       },
       changeFormValues: (rs: MessageTemplateRs) => {
@@ -119,9 +118,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
             <h2>{isEditMode ? 'Edit Message Template' : 'Add Message Template'}</h2>
           </Col>
         </Row>
-        {loading ?
-          <Loader />
-          :
+        <Loader loading={loading}>
           <Row>
             <Col md={{ span: 10, offset: 1 }}>
               <Form className="mt-4" onSubmit={onSubmit}>
@@ -185,7 +182,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                                 } else if (header.view === 'base64') {
                                   newHeaders[index].value = changed
                                 } else {
-                                  newHeaders[index].value = encodeText(changed)
+                                  newHeaders[index].value = Base64.Encoder.text2text(changed)
                                 }
                                 setHeaders(newHeaders)
                               }}
@@ -287,7 +284,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                       <Col md={10}>
                         <AceEditor
                           mode={EngineToAceMode[engine]}
-                          theme={settings['aceTheme'].value}
+                          theme={settings['aceTheme']}
                           name={`schema-representation`}
                           value={template}
                           onChange={setTemplate}
@@ -337,7 +334,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
               </Form>
             </Col>
           </Row>
-        }
+        </Loader>
       </Container>
     );
   }

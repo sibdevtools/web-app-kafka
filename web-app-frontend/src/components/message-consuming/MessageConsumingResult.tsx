@@ -1,5 +1,4 @@
 import { Alert, Col, Form, Row } from 'react-bootstrap';
-import CustomTable from '../common/CustomTable';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { getLastMessages, getMessages, GetMessagesRs, MessageRs } from '../../api/bootstrap.group';
 import { MessageConsumedModal } from './MessageConsumedModal';
@@ -7,6 +6,7 @@ import { getViewRepresentation, ViewType } from '../../utils/view';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import 'react-syntax-highlighter/dist/esm/languages/hljs/json';
+import { CustomTable } from '@sibdevtools/frontend-common';
 
 export interface MessageConsumingResultHandle {
   fetchMessages: (
@@ -119,16 +119,43 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
           </Form.Group>
         </Row>
         <CustomTable
-          columns={[
-            { key: 'partition', label: 'Partition' },
-            { key: 'offset', label: 'Offset' },
-            { key: 'timestamp', label: 'Timestamp' },
-            { key: 'timestampType', label: 'Timestamp Type' },
-            { key: 'key', label: 'Key' },
-            { key: 'value', label: 'Value' },
-          ]}
-          data={
-            messages.map((message, index) => {
+          table={{ responsive: true }}
+          thread={{
+            columns: {
+              partition: {
+                label: 'Partition',
+                sortable: true,
+                filterable: true
+              },
+              offset: {
+                label: 'Offset',
+                sortable: true,
+                filterable: true
+              },
+              timestamp: {
+                label: 'Timestamp',
+                sortable: true,
+                filterable: true
+              },
+              timestampType: {
+                label: 'Timestamp Type',
+                sortable: true,
+                filterable: true
+              },
+              key: {
+                label: 'Key',
+                sortable: true,
+                filterable: true
+              },
+              value: {
+                label: 'Value',
+                sortable: true,
+                filterable: true
+              },
+            }
+          }}
+          tbody={{
+            data: messages.map((message, index) => {
                 const key = getViewRepresentation(keyView, message.key);
                 const value = getViewRepresentation(valueView, message.value);
                 return {
@@ -160,26 +187,23 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
                   }
                 }
               }
-            )
-          }
-          rowBehavior={{
-            handler: (row) => {
-              const index = row.index as number;
-              if (messages.length > index) {
-                const message = messages[index]
-                setSelectedMessage(message)
-                setShowModal(true);
+            ),
+            rowBehavior: {
+              handler: (row) => {
+                const index = row.index as number;
+                if (messages.length > index) {
+                  const message = messages[index]
+                  setSelectedMessage(message)
+                  setShowModal(true);
+                }
+
               }
+            },
+            styleProps: {
+              textCenterValues: false
             }
           }}
-          sortableColumns={[
-            'partition', 'offset', 'timestamp', 'timestampType', 'key', 'value'
-          ]}
-          filterableColumns={[
-            'partition', 'offset', 'timestamp', 'timestampType', 'key', 'value'
-          ]}
           loading={messageLoading}
-          responsive={true}
         />
         {selectedMessage && (
           <MessageConsumedModal

@@ -4,8 +4,8 @@ import { Alert, Button, ButtonGroup, Col, Container, Row } from 'react-bootstrap
 import { contextPath } from '../../constant/common';
 import { PlusSignIcon } from 'hugeicons-react';
 import { useNavigate } from 'react-router-dom';
-import CustomTable from '../common/CustomTable';
 import { ActionButtons } from './ActionButtons';
+import { CustomTable } from '@sibdevtools/frontend-common';
 
 const MessageTemplates: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -77,39 +77,54 @@ const MessageTemplates: React.FC = () => {
             </Col>
           </Row>
           <CustomTable
-            columns={[
-              { key: 'code', label: 'Code' },
-              { key: 'name', label: 'Name' },
-              { key: 'engine', label: 'Engine' },
-              { key: 'actions', label: 'Actions' },
-            ]}
-            data={templates.map(template => {
-              return {
+            table={{ responsive: true }}
+            thread={{
+              columns: {
                 code: {
-                  representation: <code>{template.code}</code>,
-                  value: template.code
+                  label: 'Code',
+                  sortable: true,
+                  filterable: true
                 },
-                name: template.name,
+                name: {
+                  label: 'Name',
+                  sortable: true,
+                  filterable: true
+                },
                 engine: {
-                  representation: <code>{template.engine}</code>,
-                  value: template.engine
+                  label: 'Engine',
+                  sortable: true,
+                  filterable: true,
                 },
                 actions: {
-                  representation: <ActionButtons
-                    onEdit={() => navigate(`${contextPath}v1/message-template/${template.id}/edit`)}
-                    onMessagePublishing={() => navigate(`${contextPath}v1/message-template/${template.id}/publishing`)}
-                    onDelete={() => doDeleteMessageTemplate(template)}
-                  />
+                  label: 'Actions'
                 }
-              };
-            })}
-            sortableColumns={['code', 'name', 'engine']}
-            filterableColumns={['code', 'name', 'engine']}
-            styleProps={{
-              centerHeaders: true,
-              textCenterValues: true,
+              },
+              styleProps: {
+                centerHeaders: true
+              }
             }}
-            responsive={true}
+            tbody={{
+              data: templates.map(template => {
+                return {
+                  code: {
+                    representation: <code>{template.code}</code>,
+                    value: template.code
+                  },
+                  name: template.name,
+                  engine: {
+                    representation: <code>{template.engine}</code>,
+                    value: template.engine
+                  },
+                  actions: {
+                    representation: <ActionButtons
+                      onEdit={() => navigate(`${contextPath}v1/message-template/${template.id}/edit`)}
+                      onMessagePublishing={() => navigate(`${contextPath}v1/message-template/${template.id}/publishing`)}
+                      onDelete={() => doDeleteMessageTemplate(template)}
+                    />
+                  }
+                };
+              })
+            }}
             loading={loading}
           />
         </Col>

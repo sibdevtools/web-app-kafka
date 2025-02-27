@@ -1,8 +1,8 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, FloppyDiskIcon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
-import { Loader } from '../common/Loader';
 import { BootstrapGroupRq, BootstrapGroupRs } from '../../api/bootstrap.group';
+import { Loader } from '@sibdevtools/frontend-common';
 
 
 export interface BootstrapGroupFormHandle {
@@ -66,9 +66,7 @@ export const BootstrapGroupForm = forwardRef<BootstrapGroupFormHandle, Bootstrap
             <h2>{isEditMode ? 'Edit Bootstrap Group' : 'Add Bootstrap Group'}</h2>
           </Col>
         </Row>
-        {loading ?
-          <Loader />
-          :
+        <Loader loading={loading}>
           <Row>
             {error && (
               <Alert variant="danger" onClose={() => setError(null)} dismissible>
@@ -204,7 +202,7 @@ export const BootstrapGroupForm = forwardRef<BootstrapGroupFormHandle, Bootstrap
               </Form>
             </Col>
           </Row>
-        }
+        </Loader>
       </Container>
     );
   }

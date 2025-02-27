@@ -3,16 +3,13 @@ import AceEditor from 'react-ace';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getTopics, RecordMetadataDto, sendMessage } from '../../api/bootstrap.group';
 import { contextPath, TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
-import { Loader } from '../common/Loader';
 import { Alert, Button, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
 import { ArrowLeft01Icon, MagicWand01Icon, MessageAdd01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react';
-import { encode, encodeText } from '../../utils/base64';
-import { loadSettings } from '../../settings/utils';
 
 import '../../constant/ace.imports'
 import { MessagePublishedModal } from './MessagePublishedModal';
 import { getViewRepresentation, ViewType } from '../../utils/view';
-import SuggestiveInput from '../common/SuggestiveInput';
+import { Base64, Loader, Settings, SuggestiveInput } from '@sibdevtools/frontend-common';
 
 interface HeaderForm {
   key: string | null;
@@ -24,8 +21,8 @@ const MessagePublishing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { groupId } = useParams();
-  const settings = loadSettings();
-  const [topics, setTopics] = useState<string[]>([]);
+  const settings = Settings.load();
+  const [topics, setTopics] = useState<{ key: string, value: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState<boolean>(false);
 
@@ -50,7 +47,7 @@ const MessagePublishing: React.FC = () => {
 
   const [valueInputType, setValueInputType] = useState<'text' | 'file'>('text');
   const [valueView, setValueView] = useState<ViewType>('raw');
-  const [valueType, setValueType] = useState<TextType>('Text');
+  const [valueType, setValueType] = useState<TextType>('JSON');
 
   useEffect(() => {
     fetchTopics();
@@ -65,10 +62,12 @@ const MessagePublishing: React.FC = () => {
     try {
       const response = await getTopics(+groupId);
       if (response.data.success) {
-        let topics = response.data.body;
+        const topics = response.data.body.map(it => {
+          return { key: it, value: it }
+        });
         setTopics(topics);
         if (topics.length > 0) {
-          setTopic(topics[0]);
+          setTopic(topics[0].key);
         }
       } else {
         setError('Failed to fetch topics');
@@ -138,7 +137,7 @@ const MessagePublishing: React.FC = () => {
     if (keyView === 'base64') {
       setKey(changed)
     } else {
-      const encoded = encodeText(changed)
+      const encoded = Base64.Encoder.text2text(changed)
       setKey(encoded)
     }
   }
@@ -151,7 +150,7 @@ const MessagePublishing: React.FC = () => {
     if (valueView === 'base64') {
       setValue(changed)
     } else {
-      const encoded = encodeText(changed)
+      const encoded = Base64.Encoder.text2text(changed)
       setValue(encoded)
     }
   }
@@ -174,14 +173,8 @@ const MessagePublishing: React.FC = () => {
       return;
     }
     const content = await getFileContent(file);
-    setValue(encode(content));
+    setValue(Base64.Encoder.buffer2text(content));
   };
-
-  if (loading) {
-    return (
-      <Loader />
-    );
-  }
 
   return (
     <Container className="mt-4 mb-4">
@@ -199,295 +192,292 @@ const MessagePublishing: React.FC = () => {
           <h2>Message Publishing</h2>
         </Col>
       </Row>
-      <Row className="mb-2">
-        {error && (
-          <Alert variant="danger" onClose={() => setError(null)} dismissible>
-            {error}
-          </Alert>
-        )
-        }
-        <Col md={{ span: 10, offset: 1 }}>
-          <Form className="mt-4" onSubmit={onSubmit}>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={2}>
-                  <Form.Label>Topic</Form.Label>
-                </Col>
-                <Col md={10}>
-                  <SuggestiveInput
-                    suggestions={topics.map(it => {
-                      return {
-                        key: `topic-${it}`, value: it
-                      }
-                    })}
-                    maxSuggestions={5}
-                    mode="free"
-                    onChange={it => setTopic(it.value)}
-                    required={true}
-                  />
-                </Col>
-              </Row>
-            </Form.Group>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={2}>
-                  <Form.Label>Partition</Form.Label>
-                </Col>
-                <Col md={10}>
-                  <Form.Control
-                    value={partition ?? ''}
-                    type={'number'}
-                    min={0}
-                    onChange={(e) => setPartition(e.target.value ? Number(e.target.value) : null)}
-                  />
-                </Col>
-              </Row>
-            </Form.Group>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={2}>
-                  <Form.Label>Timestamp</Form.Label>
-                </Col>
-                <Col md={10}>
-                  <Form.Control
-                    value={timestamp ?? ''}
-                    type={'number'}
-                    min={0}
-                    onChange={(e) => setTimestamp(e.target.value ? Number(e.target.value) : null)}
-                  />
-                </Col>
-              </Row>
-            </Form.Group>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={2}>
-                  <Form.Label>Max Timeout</Form.Label>
-                </Col>
-                <Col md={10}>
-                  <InputGroup>
+      <Loader loading={loading}>
+        <Row className="mb-2">
+          {error && (
+            <Alert variant="danger" onClose={() => setError(null)} dismissible>
+              {error}
+            </Alert>
+          )
+          }
+          <Col md={{ span: 10, offset: 1 }}>
+            <Form className="mt-4" onSubmit={onSubmit}>
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col md={2}>
+                    <Form.Label>Topic</Form.Label>
+                  </Col>
+                  <Col md={10}>
+                    <SuggestiveInput
+                      suggestions={topics}
+                      maxSuggestions={5}
+                      mode="free"
+                      onChange={it => setTopic(it.value)}
+                      required={true}
+                    />
+                  </Col>
+                </Row>
+              </Form.Group>
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col md={2}>
+                    <Form.Label>Partition</Form.Label>
+                  </Col>
+                  <Col md={10}>
                     <Form.Control
-                      value={maxTimeout}
+                      value={partition ?? ''}
                       type={'number'}
-                      min={1}
-                      onChange={(e) => setMaxTimeout(Number(e.target.value))}
+                      min={0}
+                      onChange={(e) => setPartition(e.target.value ? Number(e.target.value) : null)}
                     />
-                    <InputGroup.Text>ms</InputGroup.Text>
-                  </InputGroup>
-                </Col>
-              </Row>
-            </Form.Group>
-            <Form.Group>
-              <Row>
-                <Col md={2}>
-                  <Form.Label>Headers</Form.Label>
-                </Col>
-                <Col md={10}>
-                  {headers.map((header, index) => (
-                    <Row className={'mb-2'}>
-                      <InputGroup>
-                        <Form.Control
-                          value={header.key ?? ''}
-                          onChange={(e) => {
-                            const newHeaders = [...headers]
-                            newHeaders[index].key = e.target.value
-                            setHeaders(newHeaders)
-                          }}
-                        />
-                        <InputGroup.Text>=</InputGroup.Text>
-                        <Form.Control
-                          value={getViewRepresentation(header.view, header.value)}
-                          onChange={(e) => {
-                            const newHeaders = [...headers]
-                            const changed = e.target.value
-                            if (!changed) {
-                              newHeaders[index].value = null
-                            } else if (header.view === 'base64') {
-                              newHeaders[index].value = changed
-                            } else {
-                              newHeaders[index].value = encodeText(changed)
-                            }
-                            setHeaders(newHeaders)
-                          }}
-                        />
-                        <Form.Select
-                          value={header.view}
-                          onChange={(e) => {
-                            const newHeaders = [...headers]
-                            newHeaders[index].view = e.target.value as ViewType
-                            setHeaders(newHeaders)
-                          }}
-                        >
-                          <option value={'base64'}>Base64</option>
-                          <option value={'raw'}>Raw</option>
-                        </Form.Select>
-                        <Button
-                          variant="outline-success"
-                          onClick={() => {
-                            const updated = [...headers]
-                            updated.splice(index + 1, 0, {
-                              key: null,
-                              value: null,
-                              view: 'raw'
-                            });
-                            setHeaders(updated)
-                          }}
-                        >
-                          <PlusSignIcon />
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          disabled={headers.length === 1}
-                          onClick={() => {
-                            const newHeaders = headers.filter((_, i) => i !== index);
-                            setHeaders(newHeaders)
-                          }}
-                        >
-                          <MinusSignIcon />
-                        </Button>
-                      </InputGroup>
-                    </Row>
-                  ))}
-                </Col>
-              </Row>
-            </Form.Group>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={2}>
-                  <Form.Label>Key</Form.Label>
-                </Col>
-                <Col md={10}>
-                  <InputGroup>
-                    <Form.Select
-                      value={keyView}
-                      onChange={(e) => setKeyView(e.target.value as ViewType)}
-                    >
-                      <option value={'base64'}>Base64</option>
-                      <option value={'raw'}>Raw</option>
-                    </Form.Select>
+                  </Col>
+                </Row>
+              </Form.Group>
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col md={2}>
+                    <Form.Label>Timestamp</Form.Label>
+                  </Col>
+                  <Col md={10}>
                     <Form.Control
-                      value={getViewRepresentation(keyView, key)}
-                      onChange={(e) => changeKey(e.target.value)}
+                      value={timestamp ?? ''}
+                      type={'number'}
+                      min={0}
+                      onChange={(e) => setTimestamp(e.target.value ? Number(e.target.value) : null)}
                     />
-                  </InputGroup>
-                </Col>
-              </Row>
-            </Form.Group>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col md={2}>
-                  <Form.Label>Value</Form.Label>
-                </Col>
-                <Col md={10}>
-                  <Row className={'mb-2'}>
+                  </Col>
+                </Row>
+              </Form.Group>
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col md={2}>
+                    <Form.Label>Max Timeout</Form.Label>
+                  </Col>
+                  <Col md={10}>
                     <InputGroup>
-                      <Form.Select
-                        value={valueInputType}
-                        onChange={(e) => setValueInputType(e.target.value as 'text' | 'file')}
-                      >
-                        <option value={'text'}>Text</option>
-                        <option value={'file'}>File</option>
-                      </Form.Select>
-                      {valueInputType === 'text' && (
-                        <Form.Select
-                          value={valueView}
-                          onChange={(e) => setValueView(e.target.value as ViewType)}
-                        >
-                          <option value={'base64'}>Base64</option>
-                          <option value={'raw'}>Raw</option>
-                        </Form.Select>
-                      )}
-                      {
-                        valueView === 'raw' && (
-                          <Form.Select
-                            value={valueType}
-                            onChange={(e) => setValueType(e.target.value as TextType)}
-                          >
-                            {textTypes.map((type, i) => (
-                              <option key={i} value={type}>{type}</option>
-                            ))}
-                          </Form.Select>
-                        )
-                      }
-                      {
-                        valueType === 'JSON' && (
-                          <Button
-                            variant="primary"
-                            type="button"
-                            title={'Beautify'}
-                            onClick={() => {
-                              if (!value) {
-                                return;
+                      <Form.Control
+                        value={maxTimeout}
+                        type={'number'}
+                        min={1}
+                        onChange={(e) => setMaxTimeout(Number(e.target.value))}
+                      />
+                      <InputGroup.Text>ms</InputGroup.Text>
+                    </InputGroup>
+                  </Col>
+                </Row>
+              </Form.Group>
+              <Form.Group>
+                <Row>
+                  <Col md={2}>
+                    <Form.Label>Headers</Form.Label>
+                  </Col>
+                  <Col md={10}>
+                    {headers.map((header, index) => (
+                      <Row className={'mb-2'}>
+                        <InputGroup>
+                          <Form.Control
+                            value={header.key ?? ''}
+                            onChange={(e) => {
+                              const newHeaders = [...headers]
+                              newHeaders[index].key = e.target.value
+                              setHeaders(newHeaders)
+                            }}
+                          />
+                          <InputGroup.Text>=</InputGroup.Text>
+                          <Form.Control
+                            value={getViewRepresentation(header.view, header.value)}
+                            onChange={(e) => {
+                              const newHeaders = [...headers]
+                              const changed = e.target.value
+                              if (!changed) {
+                                newHeaders[index].value = null
+                              } else if (header.view === 'base64') {
+                                newHeaders[index].value = changed
+                              } else {
+                                newHeaders[index].value = Base64.Encoder.text2text(changed)
                               }
-                              const valueRepresentation = getViewRepresentation(valueView, value)
-                              const json = JSON.parse(valueRepresentation)
-                              const stringified = JSON.stringify(json, null, 4)
-                              setValue(encodeText(stringified))
+                              setHeaders(newHeaders)
+                            }}
+                          />
+                          <Form.Select
+                            value={header.view}
+                            onChange={(e) => {
+                              const newHeaders = [...headers]
+                              newHeaders[index].view = e.target.value as ViewType
+                              setHeaders(newHeaders)
                             }}
                           >
-                            <MagicWand01Icon />
+                            <option value={'base64'}>Base64</option>
+                            <option value={'raw'}>Raw</option>
+                          </Form.Select>
+                          <Button
+                            variant="outline-success"
+                            onClick={() => {
+                              const updated = [...headers]
+                              updated.splice(index + 1, 0, {
+                                key: null,
+                                value: null,
+                                view: 'raw'
+                              });
+                              setHeaders(updated)
+                            }}
+                          >
+                            <PlusSignIcon />
                           </Button>
-                        )
-                      }
-                    </InputGroup>
-                  </Row>
-                  <Form.Group className={'mb-2'}>
-                    {valueInputType === 'text' && (
-                      <AceEditor
-                        mode={valueView === 'base64' ? 'text' : textTypeAceModeMap.get(valueType) ?? 'text'}
-                        theme={settings['aceTheme'].value}
-                        name={`schema-representation`}
-                        value={getViewRepresentation(valueView, value)}
-                        onChange={changeValue}
-                        className={`rounded border`}
-                        style={{
-                          resize: 'vertical',
-                          overflow: 'auto',
-                          height: '480px',
-                          minHeight: '200px',
-                        }}
-                        fontSize={14}
-                        width="100%"
-                        height="480px"
-                        showPrintMargin={true}
-                        showGutter={true}
-                        highlightActiveLine={true}
-                        wrapEnabled={true}
-                        setOptions={{
-                          showLineNumbers: true,
-                          wrap: true,
-                          useWorker: false,
-                        }}
-                        editorProps={{ $blockScrolling: true }}
-                      />
-                    )}
-                    {valueInputType === 'file' && (
+                          <Button
+                            variant="outline-danger"
+                            disabled={headers.length === 1}
+                            onClick={() => {
+                              const newHeaders = headers.filter((_, i) => i !== index);
+                              setHeaders(newHeaders)
+                            }}
+                          >
+                            <MinusSignIcon />
+                          </Button>
+                        </InputGroup>
+                      </Row>
+                    ))}
+                  </Col>
+                </Row>
+              </Form.Group>
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col md={2}>
+                    <Form.Label>Key</Form.Label>
+                  </Col>
+                  <Col md={10}>
+                    <InputGroup>
+                      <Form.Select
+                        value={keyView}
+                        onChange={(e) => setKeyView(e.target.value as ViewType)}
+                      >
+                        <option value={'base64'}>Base64</option>
+                        <option value={'raw'}>Raw</option>
+                      </Form.Select>
                       <Form.Control
-                        type="file"
-                        onChange={handleFileChange}
+                        value={getViewRepresentation(keyView, key)}
+                        onChange={(e) => changeKey(e.target.value)}
                       />
-                    )}
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Form.Group>
-            <Form.Group>
-              <Row className={'mb-2'}>
-                <Col className="d-flex justify-content-end">
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    disabled={sending}
-                    title={'Send'}
-                  >
-                    <MessageAdd01Icon />
-                  </Button>
-                </Col>
-              </Row>
-            </Form.Group>
-          </Form>
-        </Col>
-      </Row>
-
+                    </InputGroup>
+                  </Col>
+                </Row>
+              </Form.Group>
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col md={2}>
+                    <Form.Label>Value</Form.Label>
+                  </Col>
+                  <Col md={10}>
+                    <Row className={'mb-2'}>
+                      <InputGroup>
+                        <Form.Select
+                          value={valueInputType}
+                          onChange={(e) => setValueInputType(e.target.value as 'text' | 'file')}
+                        >
+                          <option value={'text'}>Text</option>
+                          <option value={'file'}>File</option>
+                        </Form.Select>
+                        {valueInputType === 'text' && (
+                          <Form.Select
+                            value={valueView}
+                            onChange={(e) => setValueView(e.target.value as ViewType)}
+                          >
+                            <option value={'base64'}>Base64</option>
+                            <option value={'raw'}>Raw</option>
+                          </Form.Select>
+                        )}
+                        {
+                          valueView === 'raw' && (
+                            <Form.Select
+                              value={valueType}
+                              onChange={(e) => setValueType(e.target.value as TextType)}
+                            >
+                              {textTypes.map((type, i) => (
+                                <option key={i} value={type}>{type}</option>
+                              ))}
+                            </Form.Select>
+                          )
+                        }
+                        {
+                          valueType === 'JSON' && (
+                            <Button
+                              variant="primary"
+                              type="button"
+                              title={'Beautify'}
+                              onClick={() => {
+                                if (!value) {
+                                  return;
+                                }
+                                const valueRepresentation = getViewRepresentation(valueView, value)
+                                const json = JSON.parse(valueRepresentation)
+                                const stringified = JSON.stringify(json, null, 4)
+                                setValue(Base64.Encoder.text2text(stringified))
+                              }}
+                            >
+                              <MagicWand01Icon />
+                            </Button>
+                          )
+                        }
+                      </InputGroup>
+                    </Row>
+                    <Form.Group className={'mb-2'}>
+                      {valueInputType === 'text' && (
+                        <AceEditor
+                          mode={valueView === 'base64' ? 'text' : textTypeAceModeMap.get(valueType) ?? 'text'}
+                          theme={settings['aceTheme']}
+                          name={`schema-representation`}
+                          value={getViewRepresentation(valueView, value)}
+                          onChange={changeValue}
+                          className={`rounded border`}
+                          style={{
+                            resize: 'vertical',
+                            overflow: 'auto',
+                            height: '480px',
+                            minHeight: '200px',
+                          }}
+                          fontSize={14}
+                          width="100%"
+                          height="480px"
+                          showPrintMargin={true}
+                          showGutter={true}
+                          highlightActiveLine={true}
+                          wrapEnabled={true}
+                          setOptions={{
+                            showLineNumbers: true,
+                            wrap: true,
+                            useWorker: false,
+                          }}
+                          editorProps={{ $blockScrolling: true }}
+                        />
+                      )}
+                      {valueInputType === 'file' && (
+                        <Form.Control
+                          type="file"
+                          onChange={handleFileChange}
+                        />
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form.Group>
+              <Form.Group>
+                <Row className={'mb-2'}>
+                  <Col className="d-flex justify-content-end">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={sending}
+                      title={'Send'}
+                    >
+                      <MessageAdd01Icon />
+                    </Button>
+                  </Col>
+                </Row>
+              </Form.Group>
+            </Form>
+          </Col>
+        </Row>
+      </Loader>
       {record && (
         <MessagePublishedModal
           showModal={showModal}

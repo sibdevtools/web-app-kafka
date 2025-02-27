@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { BootstrapGroupRs, deleteBootstrapGroup, getAllBootstrapGroup } from '../../api/bootstrap.group';
-import { Loader } from '../common/Loader';
 import { Alert, Button, ButtonGroup, Col, Container, ListGroup, ListGroupItem, Row } from 'react-bootstrap';
 import { contextPath } from '../../constant/common';
 import { PlusSignIcon } from 'hugeicons-react';
 import { useNavigate } from 'react-router-dom';
-import CustomTable from '../common/CustomTable';
 import { ActionButtons } from './ActionButtons';
+import { CustomTable } from '@sibdevtools/frontend-common';
 
 const BootstrapGroups: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -52,12 +51,6 @@ const BootstrapGroups: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <Loader />
-    );
-  }
-
   if (error) {
     return (
       <Alert variant="danger" onClose={() => setError(null)} dismissible>
@@ -84,42 +77,60 @@ const BootstrapGroups: React.FC = () => {
             </Col>
           </Row>
           <CustomTable
-            columns={[
-              { key: 'code', label: 'Code' },
-              { key: 'name', label: 'Name' },
-              { key: 'servers', label: 'Bootstrap Servers' },
-              { key: 'actions', label: 'Actions' },
-            ]}
-            data={groups.map(group => {
-              return {
+            table={{ responsive: true }}
+            thread={{
+              columns: {
                 code: {
-                  representation: <code>{group.code}</code>,
-                  value: group.code
+                  label: 'Code',
+                  sortable: true,
+                  filterable: true
                 },
-                name: group.name,
+                name: {
+                  label: 'Name',
+                  sortable: true,
+                  filterable: true
+                },
                 servers: {
-                  representation: <ListGroup>
-                    {group.bootstrapServers.map(it => (<ListGroupItem key={it}>{it}</ListGroupItem>))}
-                  </ListGroup>,
-                  value: group.bootstrapServers.join(', ')
+                  label: 'Bootstrap Servers',
+                  filterable: true
                 },
                 actions: {
-                  representation: <ActionButtons
-                    onEdit={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/edit`)}
-                    onMessageConsuming={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/consuming`)}
-                    onMessagePublishing={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/publishing`)}
-                    onDelete={() => doDeleteBootstrapGroup(group)}
-                  />
+                  label: 'Actions'
                 }
-              };
-            })}
-            sortableColumns={['code', 'name']}
-            filterableColumns={['code', 'name', 'servers']}
-            styleProps={{
-              centerHeaders: true,
-              textCenterValues: true,
+              },
+              styleProps: {
+                centerHeaders: true
+              }
             }}
-            responsive={true}
+            tbody={{
+              data: groups.map(group => {
+                return {
+                  code: {
+                    representation: <code>{group.code}</code>,
+                    value: group.code
+                  },
+                  name: group.name,
+                  servers: {
+                    representation: <ListGroup>
+                      {group.bootstrapServers.map(it => (<ListGroupItem key={it}>{it}</ListGroupItem>))}
+                    </ListGroup>,
+                    value: group.bootstrapServers.join(', ')
+                  },
+                  actions: {
+                    representation: <ActionButtons
+                      onEdit={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/edit`)}
+                      onMessageConsuming={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/consuming`)}
+                      onMessagePublishing={() => navigate(`${contextPath}v1/bootstrap-group/${group.id}/publishing`)}
+                      onDelete={() => doDeleteBootstrapGroup(group)}
+                    />
+                  }
+                };
+              }),
+              styleProps: {
+                textCenterValues: true
+              }
+            }}
+            loading={loading}
           />
         </Col>
       </Row>
