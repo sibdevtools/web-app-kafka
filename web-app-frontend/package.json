@@ -24,7 +24,7 @@
     "react-router-dom": "^6.26.2",
     "react-syntax-highlighter": "^15.6.1",
     "typescript": "^5.6.2",
-    "@sibdevtools/frontend-common": "^0.0.9"
+    "@sibdevtools/frontend-common": "^0.0.40"
   },
   "devDependencies": {
     "css-loader": "^7.1.2",

@@ -120,7 +120,7 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
         </Row>
         <CustomTable
           table={{ responsive: true }}
-          thread={{
+          thead={{
             columns: {
               partition: {
                 label: 'Partition',
@@ -199,9 +199,6 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
 
               }
             },
-            styleProps: {
-              textCenterValues: false
-            }
           }}
           loading={messageLoading}
         />

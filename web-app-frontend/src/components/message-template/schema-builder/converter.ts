@@ -75,6 +75,10 @@ export function convertToJsonSchema(node: SchemaNode): any {
 
 
 export function parseJsonSchema(json: any): SchemaNode {
+  if (!json) {
+    return initialSchema
+  }
+  console.log('parseJsonSchema', json)
   let type: SchemaNode['type'] = 'string';
   let specification: SchemaNode['specification'] = 'none';
   let nullable = false;
@@ -128,10 +132,11 @@ export function parseJsonSchema(json: any): SchemaNode {
     case 'object':
       return {
         ...baseNode,
-        properties: Object.entries(json.properties || {}).map(([name, prop]) => ({
-          name,
-          schema: parseJsonSchema(prop)
-        })),
+        properties: Object.entries(json.properties || {})
+          .map(([name, prop]) => ({
+            name,
+            schema: parseJsonSchema(prop)
+          })),
         default: json.default !== undefined ? JSON.stringify(json.default) : undefined,
       } as ObjectSchemaNode
     case 'array':

@@ -78,36 +78,38 @@ const BootstrapGroups: React.FC = () => {
           </Row>
           <CustomTable
             table={{ responsive: true }}
-            thread={{
+            thead={{
               columns: {
                 code: {
                   label: 'Code',
                   sortable: true,
-                  filterable: true
+                  filterable: true,
+                  className: 'text-center'
                 },
                 name: {
                   label: 'Name',
                   sortable: true,
-                  filterable: true
+                  filterable: true,
+                  className: 'text-center'
                 },
                 servers: {
                   label: 'Bootstrap Servers',
-                  filterable: true
+                  filterable: true,
+                  className: 'text-center'
                 },
                 actions: {
-                  label: 'Actions'
+                  label: 'Actions',
+                  className: 'text-center'
                 }
               },
-              styleProps: {
-                centerHeaders: true
-              }
             }}
             tbody={{
               data: groups.map(group => {
                 return {
                   code: {
                     representation: <code>{group.code}</code>,
-                    value: group.code
+                    value: group.code,
+                    className: 'text-center'
                   },
                   name: group.name,
                   servers: {
@@ -126,9 +128,6 @@ const BootstrapGroups: React.FC = () => {
                   }
                 };
               }),
-              styleProps: {
-                textCenterValues: true
-              }
             }}
             loading={loading}
           />

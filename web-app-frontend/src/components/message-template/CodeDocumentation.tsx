@@ -400,6 +400,127 @@ session.remove("sectionKey", "attributeKey1")`
   },
 ];
 
+const keyValueStorageExamples = [
+  {
+    description: 'Get key-value storage service',
+    implementations: {
+      javascript: `const kvs = wak.keyValueStorage();`,
+      python: `kvs = wak.keyValueStorage()`
+    }
+  },
+];
+const keyValueStorageRecordExamples = [
+  {
+    description: 'Get value holder',
+    implementations: {
+      javascript: `const valueHolder = kvs.get("space-name", "key");`,
+      python: `valueHolder = kvs.get("space-name", "key")`
+    }
+  },
+  {
+    description: 'Get value from holder',
+    implementations: {
+      javascript: `const value = valueHolder.value();`,
+      python: `value = valueHolder.value()`
+    }
+  },
+  {
+    description: 'Get meta information from holder',
+    implementations: {
+      javascript: `const meta = valueHolder.meta();`,
+      python: `meta = valueHolder.meta()`
+    }
+  },
+  {
+    description: 'Set record state',
+    implementations: {
+      javascript: `const epochMilliseconds = 1750832700000;
+const meta = kvs.set({
+  space: "space-name",
+  key: "key",
+  value: "some-value", // any serializable value
+  expiredAt: epochMilliseconds // optional
+});`,
+      python: `epochMilliseconds = 1750832700000
+meta = kvs.set({
+  "space": "space-name",
+  "key": "key",
+  "value": "some-value", # any serializable value
+  "expiredAt": epochMilliseconds # optional
+});`
+    }
+  },
+  {
+    description: 'Prolongate record',
+    implementations: {
+      javascript: `const epochMilliseconds = 1750832700000;
+const meta = kvs.prolongate("space-name", "key", epochMilliseconds);`,
+      python: `epochMilliseconds = 1750832700000
+meta = kvs.prolongate("space-name", "key", epochMilliseconds)`
+    }
+  },
+  {
+    description: 'Remove value from space by key',
+    implementations: {
+      javascript: `kvs.delete("space-name", "key");`,
+      python: `kvs.delete("space-name", "key")`
+    }
+  },
+];
+const keyValueStorageRecordMetaExamples = [
+  {
+    description: 'Get creation epoch milliseconds from meta information',
+    implementations: {
+      javascript: `const createdAt = meta.createdAt();`,
+      python: `createdAt = meta.createdAt()`
+    }
+  },
+  {
+    description: 'Get modification epoch milliseconds from meta information',
+    implementations: {
+      javascript: `const modifiedAt = meta.modifiedAt();`,
+      python: `modifiedAt = meta.modifiedAt()`
+    }
+  },
+  {
+    description: 'Get expiration epoch milliseconds from meta information',
+    implementations: {
+      javascript: `const expiredAt = meta.expiredAt();`,
+      python: `expiredAt = meta.expiredAt()`
+    }
+  },
+  {
+    description: 'Get version from meta information',
+    implementations: {
+      javascript: `const version = meta.version();`,
+      python: `version = meta.version()`
+    }
+  },
+];
+const keyValueStorageSpaceExamples = [
+  {
+    description: 'Get set of all spaces names',
+    implementations: {
+      javascript: `const spaces = kvs.getSpaces();`,
+      python: `spaces = kvs.getSpaces()`
+    }
+  },
+  {
+    description: 'Get set of all keys in space',
+    implementations: {
+      javascript: `const keys = kvs.getKeys("space-name");`,
+      python: `keys = kvs.getKeys("space-name")`
+    }
+  },
+  {
+    description: 'Delete entire space',
+    implementations: {
+      javascript: `kvs.delete("space-name");`,
+      python: `kvs.delete("space-name")`
+    }
+  },
+];
+
 const allExamples: ExampleSection = {
   name: 'Examples',
   sections: [
@@ -445,6 +566,26 @@ const allExamples: ExampleSection = {
             {
               name: 'Session attributes',
               examples: sessionAttributesExamples
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'Key-value storage',
+      examples: keyValueStorageExamples,
+      sections: [
+        {
+          name: 'Space operations',
+          examples: keyValueStorageSpaceExamples
+        },
+        {
+          name: 'Record operations',
+          examples: keyValueStorageRecordExamples,
+          sections: [
+            {
+              name: 'Meta information',
+              examples: keyValueStorageRecordMetaExamples
             }
           ]
         }

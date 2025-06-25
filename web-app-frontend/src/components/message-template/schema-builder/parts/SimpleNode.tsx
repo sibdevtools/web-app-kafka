@@ -33,58 +33,59 @@ const SimpleNode: React.FC<SimpleNodeProps> = ({
         </InputGroup>
       </Form.Group>
 
-      <Form.Group className="mb-3">
-        <InputGroup>
-          <InputGroup.Text>Default</InputGroup.Text>
-          <Form.Control
-            value={node.default}
-            onChange={(e) => onChange({ ...node, default: e.target.value })}
-          />
-        </InputGroup>
-      </Form.Group>
-
       {!isRoot && (
-        <Form.Group className="mb-3">
-          <InputGroup>
-            <InputGroup.Text>
-              Type
-            </InputGroup.Text>
-            <Form.Select
-              value={node.type}
-              onChange={(e) => onChange({ ...node, type: e.target.value as SchemaNode['type'] })}
-              required={true}
-            >
-              {['string', 'boolean', 'number', 'integer', 'object', 'array'].map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </Form.Select>
-            <InputGroup.Text>
-              <Form.Check
-                type="checkbox"
-                label="Nullable"
-                checked={node.nullable}
-                onChange={(e) => onChange({ ...node, nullable: e.target.checked })}
+        <>
+          <Form.Group className="mb-3">
+            <InputGroup>
+              <InputGroup.Text>Default</InputGroup.Text>
+              <Form.Control
+                value={node.default}
+                onChange={(e) => onChange({ ...node, default: e.target.value })}
               />
-            </InputGroup.Text>
-          </InputGroup>
-        </Form.Group>
-      )}
+            </InputGroup>
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <InputGroup>
+              <InputGroup.Text>
+                Type
+              </InputGroup.Text>
+              <Form.Select
+                value={node.type}
+                onChange={(e) => onChange({ ...node, type: e.target.value as SchemaNode['type'] })}
+                required={true}
+              >
+                {['string', 'boolean', 'number', 'integer', 'object', 'array'].map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </Form.Select>
+              <InputGroup.Text>
+                <Form.Check
+                  type="checkbox"
+                  label="Nullable"
+                  checked={node.nullable}
+                  onChange={(e) => onChange({ ...node, nullable: e.target.checked })}
+                />
+              </InputGroup.Text>
+            </InputGroup>
+          </Form.Group>
 
-      <Form.Group className="mb-3">
-        <InputGroup>
-          <InputGroup.Text>
-            Specification
-          </InputGroup.Text>
-          <Form.Select
-            value={node.specification}
-            onChange={(e) => onChange({ ...node, specification: e.target.value as SchemaNode['specification'] })}
-          >
-            {['none', 'enum'].map((type) => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </Form.Select>
-        </InputGroup>
-      </Form.Group>
+          <Form.Group className="mb-3">
+            <InputGroup>
+              <InputGroup.Text>
+                Specification
+              </InputGroup.Text>
+              <Form.Select
+                value={node.specification}
+                onChange={(e) => onChange({ ...node, specification: e.target.value as SchemaNode['specification'] })}
+              >
+                {['none', 'enum'].map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </Form.Select>
+            </InputGroup>
+          </Form.Group>
+        </>
+      )}
 
       {node.specification === 'enum' && (
         <EnumNode

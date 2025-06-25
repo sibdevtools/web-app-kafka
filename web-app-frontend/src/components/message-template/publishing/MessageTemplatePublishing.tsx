@@ -26,10 +26,11 @@ const MessageTemplatePublishing: React.FC = () => {
   const [groups, setGroups] = useState<BootstrapGroupRs[]>([]);
 
   const [topicsLoading, setTopicsLoading] = useState(false);
-  const [topics, setTopics] = useState<{key: string, value: string}[]>([]);
+  const [topics, setTopics] = useState<{ key: string, value: string }[]>([]);
 
   const [templateLoading, setTemplateLoading] = useState(true);
   const [template, setTemplate] = useState<MessageTemplateRs>();
+  const [schema, setJsonSchema] = useState<ObjectSchemaNode>();
 
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +90,7 @@ const MessageTemplatePublishing: React.FC = () => {
       if (response.data.success) {
         let template = response.data.body;
         setTemplate(template);
+        setJsonSchema(parseJsonSchema(template?.schema) as ObjectSchemaNode)
       } else {
         setError('Failed to fetch template');
         return;
@@ -121,7 +123,9 @@ const MessageTemplatePublishing: React.FC = () => {
     try {
       const response = await getTopics(+groupId);
       if (response.data.success) {
-        const topics = response.data.body.map(it => {return {key: it, value: it}});
+        const topics = response.data.body.map(it => {
+          return { key: it, value: it }
+        });
         setTopics(topics);
         if (topics.length > 0) {
           setTopic(topics[0].key);
@@ -469,18 +473,20 @@ const MessageTemplatePublishing: React.FC = () => {
                         </Col>
                       </Row>
                     </Form.Group>
-                    <Form.Group>
-                      <Row className={'mb-2'}>
-                        <Col md={2}>
-                          <Form.Label>Value</Form.Label>
-                        </Col>
-                        <Col md={10}>
-                          <ValueSchemaForm
-                            ref={valueSchemaFormRef}
-                            schema={parseJsonSchema(template?.schema) as ObjectSchemaNode} />
-                        </Col>
-                      </Row>
-                    </Form.Group>
+                    {schema && (schema?.properties?.length ?? 0) > 0 && (
+                      <Form.Group>
+                        <Row className={'mb-2'}>
+                          <Col md={2}>
+                            <Form.Label>Value</Form.Label>
+                          </Col>
+                          <Col md={10}>
+                            <ValueSchemaForm
+                              ref={valueSchemaFormRef}
+                              schema={schema} />
+                          </Col>
+                        </Row>
+                      </Form.Group>
+                    )}
                     <Form.Group>
                       <Row className={'mb-2'}>
                         <Col className="d-flex justify-content-end">

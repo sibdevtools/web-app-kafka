@@ -6,7 +6,7 @@ import AceEditor from 'react-ace';
 import { TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
 import { FloppyDiskIcon, MagicWand01Icon, TextWrapIcon } from 'hugeicons-react';
 import { ViewType } from '../../utils/view';
-import { Files, Settings } from '@sibdevtools/frontend-common';
+import { Files, SettingsUtils } from '@sibdevtools/frontend-common';
 
 export interface MessageConsumedModalProps {
   showModal: boolean;
@@ -19,7 +19,7 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                                                                             setShowModal,
                                                                             message
                                                                           }) => {
-  const settings = Settings.load();
+  const settings = SettingsUtils.load();
   const headers = Object.entries(message.headers)
   const [isWordWrapEnabled, setIsWordWrapEnabled] = useState(true);
 

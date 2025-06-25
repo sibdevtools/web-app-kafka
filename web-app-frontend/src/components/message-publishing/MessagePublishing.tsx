@@ -9,7 +9,7 @@ import { ArrowLeft01Icon, MagicWand01Icon, MessageAdd01Icon, MinusSignIcon, Plus
 import '../../constant/ace.imports'
 import { MessagePublishedModal } from './MessagePublishedModal';
 import { getViewRepresentation, ViewType } from '../../utils/view';
-import { Base64, Loader, Settings, SuggestiveInput } from '@sibdevtools/frontend-common';
+import { Base64, Loader, SettingsUtils, SuggestiveInput } from '@sibdevtools/frontend-common';
 
 interface HeaderForm {
   key: string | null;
@@ -21,7 +21,7 @@ const MessagePublishing: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { groupId } = useParams();
-  const settings = Settings.load();
+  const settings = SettingsUtils.load();
   const [topics, setTopics] = useState<{ key: string, value: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState<boolean>(false);

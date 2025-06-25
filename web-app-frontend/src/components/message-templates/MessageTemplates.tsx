@@ -78,49 +78,53 @@ const MessageTemplates: React.FC = () => {
           </Row>
           <CustomTable
             table={{ responsive: true }}
-            thread={{
+            thead={{
               columns: {
                 code: {
                   label: 'Code',
                   sortable: true,
-                  filterable: true
+                  filterable: true,
+                  className: 'text-center'
                 },
                 name: {
                   label: 'Name',
                   sortable: true,
-                  filterable: true
+                  filterable: true,
+                  className: 'text-center'
                 },
                 engine: {
                   label: 'Engine',
                   sortable: true,
                   filterable: true,
+                  className: 'text-center'
                 },
                 actions: {
-                  label: 'Actions'
+                  label: 'Actions',
+                  className: 'text-center'
                 }
               },
-              styleProps: {
-                centerHeaders: true
-              }
             }}
             tbody={{
               data: templates.map(template => {
                 return {
                   code: {
                     representation: <code>{template.code}</code>,
-                    value: template.code
+                    value: template.code,
+                    className: 'text-center'
                   },
                   name: template.name,
                   engine: {
                     representation: <code>{template.engine}</code>,
-                    value: template.engine
+                    value: template.engine,
+                    className: 'text-center'
                   },
                   actions: {
                     representation: <ActionButtons
                       onEdit={() => navigate(`${contextPath}v1/message-template/${template.id}/edit`)}
                       onMessagePublishing={() => navigate(`${contextPath}v1/message-template/${template.id}/publishing`)}
                       onDelete={() => doDeleteMessageTemplate(template)}
-                    />
+                    />,
+                    className: 'text-center'
                   }
                 };
               })

@@ -11,7 +11,7 @@ import { convertToJsonSchema, parseJsonSchema } from './schema-builder/converter
 import '../../constant/ace.imports'
 import { getViewRepresentation, ViewType } from '../../utils/view';
 import CodeDocumentation from './CodeDocumentation';
-import { Base64, Loader, Settings } from '@sibdevtools/frontend-common';
+import { Base64, Loader, SettingsUtils } from '@sibdevtools/frontend-common';
 
 export interface MessageTemplateFormHandle {
   getMessageTemplateRq: () => MessageTemplateRq;
@@ -46,7 +46,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
      isEditMode,
      navigateBack
    }: MessageTemplateFormHandleProps, ref) => {
-    const settings = Settings.load();
+    const settings = SettingsUtils.load();
 
     const [code, setCode] = useState('');
     const [name, setName] = useState('');
