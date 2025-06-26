@@ -1,9 +1,11 @@
-import React from 'react';
-import { Accordion, Table } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Accordion, Button, Table } from 'react-bootstrap';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
 import 'react-syntax-highlighter/dist/esm/languages/hljs/python';
+import { Task01Icon, TaskDone01Icon } from 'hugeicons-react';
+import './CodeDocumentation.css';
 
 
 type ExampleCode = {
@@ -590,14 +592,158 @@ const allExamples: ExampleSection = {
           ]
         }
       ]
+    },
+    {
+      name: 'Utils',
+      examples: [
+        {
+          description: 'Get utils',
+          implementations: {
+            javascript: 'const utils = wak.utils()',
+            python: 'utils = wak.utils()'
+          }
+        }
+      ],
+      sections: [
+        {
+          name: 'Binary utils',
+          examples: [
+            {
+              description: 'Get binary utils',
+              implementations: {
+                javascript: 'const binary = utils.binary()',
+                python: 'binary = utils.binary()'
+              }
+            },
+            {
+              description: 'Convert string, number to binary array',
+              implementations: {
+                javascript: 'const array = binary.toBytes("test")',
+                python: 'array = binary.toBytes("test")'
+              }
+            },
+            {
+              description: 'Convert binary array to string',
+              implementations: {
+                javascript: 'const array = binary.toString([1, 2, 3])',
+                python: 'array = binary.toString([1, 2, 3])'
+              }
+            },
+            {
+              description: 'Convert binary array to int',
+              implementations: {
+                javascript: 'const array = binary.toInt([1, 2, 3, 4])',
+                python: 'array = binary.toInt([1, 2, 3, 4])'
+              }
+            },
+            {
+              description: 'Convert binary array to long',
+              implementations: {
+                javascript: 'const array = binary.toLong([1, 2, 3, 4, 5, 6, 7, 8])',
+                python: 'array = binary.toLong([1, 2, 3, 4, 5, 6, 7, 8])'
+              }
+            },
+            {
+              description: 'Convert binary array to float',
+              implementations: {
+                javascript: 'const array = binary.toFloat([1, 2, 3, 4])',
+                python: 'array = binary.toFloat([1, 2, 3, 4])'
+              }
+            },
+            {
+              description: 'Convert binary array to double',
+              implementations: {
+                javascript: 'const array = binary.toDouble([1, 2, 3, 4, 5, 6, 7, 8])',
+                python: 'array = binary.toDouble([1, 2, 3, 4, 5, 6, 7, 8])'
+              }
+            }
+          ]
+        },
+        {
+          name: 'Base64 utils',
+          examples: [
+            {
+              description: 'Get Base64 utils',
+              implementations: {
+                javascript: 'const base64 = utils.base64()',
+                python: 'base64 = utils.base64()'
+              }
+            },
+            {
+              description: 'Encode array to array',
+              implementations: {
+                javascript: 'const array = base64.encode([1, 2, 3, 4])',
+                python: 'array = base64.encode([1, 2, 3, 4])'
+              }
+            },
+            {
+              description: 'Encode array to string',
+              implementations: {
+                javascript: 'const string = base64.encodeToString([1, 2, 3, 4])',
+                python: 'string = base64.encodeToString([1, 2, 3, 4])'
+              }
+            },
+            {
+              description: 'Decode array or string to array',
+              implementations: {
+                javascript: 'const array = base64.decode([1, 2, 3, 4])',
+                python: 'array = base64.decode([1, 2, 3, 4])'
+              }
+            },
+          ]
+        },
+        {
+          name: 'JSON utils',
+          examples: [
+            {
+              description: 'Get JSON utils',
+              implementations: {
+                javascript: 'const json = utils.json()',
+                python: 'json = utils.json()'
+              }
+            },
+            {
+              description: 'Serialize object to binary array with json',
+              implementations: {
+                javascript: 'const array = json.serialize({key: "value"})',
+                python: 'array = json.serialize({"key": "value"})'
+              }
+            },
+            {
+              description: 'Dump object to string json',
+              implementations: {
+                javascript: 'const dumped = json.dump({key: "value"})',
+                python: 'dumped = json.dump({"key": "value"})'
+              }
+            },
+            {
+              description: 'Deserialize object from binary array with json',
+              implementations: {
+                javascript: 'const deserialized = json.deserialize([1, 2, 3, 4])',
+                python: 'deserialized = json.deserialize([1, 2, 3, 4])'
+              }
+            },
+            {
+              description: 'Parse object from json string',
+              implementations: {
+                javascript: 'const parsed = json.parse("{\"key\":42}")',
+                python: 'parsed = json.parse("{\"key\":42}")'
+              }
+            },
+          ]
+        }
+      ]
     }
   ]
 };
+
 
 const CodeDocumentation: React.FC<{ mode: 'javascript' | 'python', section?: ExampleSection }> = ({
                                                                                                     mode,
                                                                                                     section = allExamples
                                                                                                   }) => {
+  const [copied, setCopied] = useState<Array<any>>([]);
+
   return (
     <Accordion className={'mb-2'}>
       <Accordion.Item eventKey={`examples-${section.name}`}>
@@ -619,14 +765,44 @@ const CodeDocumentation: React.FC<{ mode: 'javascript' | 'python', section?: Exa
                       <td>{it.description}</td>
                       <td>
                         {'implementation' in it && (
-                          <SyntaxHighlighter language={mode} style={docco}>
-                            {it.implementation}
-                          </SyntaxHighlighter>
+                          <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden' }}>
+                            <Button
+                              variant={'link'}
+                              className={'text-secondary code-clipboard-btn'}
+                              size={'sm'}
+                              onClick={async () => {
+                                const copiedNew = [...copied, it];
+                                setCopied(copiedNew);
+                                await navigator.clipboard.writeText(it.implementation);
+                                setTimeout(() => setCopied(copied.filter(e => e !== it)), 1500);
+                              }}
+                            >
+                              {copied.some(e => e === it) ? (<TaskDone01Icon size={16} />) : (<Task01Icon size={16} />)}
+                            </Button>
+                            <SyntaxHighlighter language={mode} style={docco}>
+                              {it.implementation}
+                            </SyntaxHighlighter>
+                          </div>
                         )}
                         {'implementations' in it && (
-                          <SyntaxHighlighter language={mode} style={docco}>
-                            {it.implementations[mode]}
-                          </SyntaxHighlighter>
+                          <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden' }}>
+                            <Button
+                              variant={'link'}
+                              className={'text-secondary code-clipboard-btn'}
+                              size={'sm'}
+                              onClick={async () => {
+                                const copiedNew = [...copied, it];
+                                setCopied(copiedNew);
+                                await navigator.clipboard.writeText(it.implementations[mode]);
+                                setTimeout(() => setCopied(copied.filter(e => e !== it)), 1500);
+                              }}
+                            >
+                              {copied.some(e => e === it) ? (<TaskDone01Icon size={16} />) : (<Task01Icon size={16} />)}
+                            </Button>
+                            <SyntaxHighlighter language={mode} style={docco}>
+                              {it.implementations[mode]}
+                            </SyntaxHighlighter>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -644,5 +820,4 @@ const CodeDocumentation: React.FC<{ mode: 'javascript' | 'python', section?: Exa
     </Accordion>
   );
 };
-
 export default CodeDocumentation;

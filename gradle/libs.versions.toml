@@ -15,9 +15,9 @@ web-app-api = "0.0.6"
 session-embedded = "0.0.10"
 storage-embedded = "0.1.16"
 async-embedded = "0.0.10"
-key-value-storage-embedded = "0.0.2"
+key-value-storage-embedded = "0.0.3"
 
-kafka-client-service = "0.0.19"
+kafka-client-service = "0.0.20"
 
 
 [libraries]
