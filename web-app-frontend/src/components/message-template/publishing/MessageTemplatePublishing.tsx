@@ -228,6 +228,7 @@ const MessageTemplatePublishing: React.FC = () => {
         </Col>
         <Col md={9}>
           <h2>Message Publishing</h2>
+          <h3>{template?.name}</h3>
         </Col>
       </Row>
       <Row className="mb-2">
