@@ -7,6 +7,7 @@ import { TextType, textTypeAceModeMap, textTypes } from '../../constant/common';
 import { FloppyDiskIcon, MagicWand01Icon, TextWrapIcon } from 'hugeicons-react';
 import { ViewType } from '../../utils/view';
 import { Files, SettingsUtils } from '@sibdevtools/frontend-common';
+import { IAceEditor } from 'react-ace/lib/types';
 
 export interface MessageConsumedModalProps {
   showModal: boolean;
@@ -28,6 +29,20 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
   const [valueView, setValueView] = useState<ViewType>('base64');
   const [valueType, setValueType] = useState<TextType>('Text');
   const [decodedMessage, setDecodedMessage] = useState<string>('');
+
+  const handleLoad = (editor: IAceEditor) => {
+    editor.commands.addCommand({
+      name: 'openSearch',
+      bindKey: { win: 'Ctrl-F', mac: 'Command-F' },
+      exec: (editor) => editor.execCommand('find'),
+    });
+
+    editor.commands.addCommand({
+      name: 'openReplace',
+      bindKey: { win: 'Ctrl-H', mac: 'Command-H' },
+      exec: (editor) => editor.execCommand('replace'),
+    });
+  };
 
   useEffect(() => {
     const headerViews = Array<'raw' | 'base64'>(headers.length)
@@ -200,18 +215,18 @@ export const MessageConsumedModal: React.FC<MessageConsumedModalProps> = ({
                 <AceEditor
                   mode={valueView === 'base64' ? 'text' : textTypeAceModeMap.get(valueType) ?? 'text'}
                   theme={settings['aceTheme']}
+                  onLoad={handleLoad}
                   name={`valueRepresentation`}
                   value={(valueView === 'base64' ? message.value : decodedMessage) ?? ''}
                   className={'rounded'}
                   style={{
                     resize: 'vertical',
                     overflow: 'auto',
-                    height: '480px',
-                    minHeight: '200px',
+                    minHeight: '240px',
                   }}
                   fontSize={14}
                   width="100%"
-                  height="480px"
+                  height="640px"
                   showPrintMargin={true}
                   showGutter={true}
                   highlightActiveLine={true}

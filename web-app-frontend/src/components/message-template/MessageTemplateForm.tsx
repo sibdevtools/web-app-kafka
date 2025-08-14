@@ -12,6 +12,7 @@ import '../../constant/ace.imports'
 import { getViewRepresentation, ViewType } from '../../utils/view';
 import CodeDocumentation from './CodeDocumentation';
 import { Base64, Loader, SettingsUtils } from '@sibdevtools/frontend-common';
+import { IAceEditor } from 'react-ace/lib/types';
 
 export interface MessageTemplateFormHandle {
   getMessageTemplateRq: () => MessageTemplateRq;
@@ -101,6 +102,20 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
         setTemplate(tryDecodeToText(rs.template));
       }
     }));
+
+    const handleLoad = (editor: IAceEditor) => {
+      editor.commands.addCommand({
+        name: 'openSearch',
+        bindKey: { win: 'Ctrl-F', mac: 'Command-F' },
+        exec: (editor) => editor.execCommand('find'),
+      });
+
+      editor.commands.addCommand({
+        name: 'openReplace',
+        bindKey: { win: 'Ctrl-H', mac: 'Command-H' },
+        exec: (editor) => editor.execCommand('replace'),
+      });
+    };
 
     return (
       <Container className="mt-4 mb-4">
@@ -285,6 +300,7 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                         <AceEditor
                           mode={EngineToAceMode[engine]}
                           theme={settings['aceTheme']}
+                          onLoad={handleLoad}
                           name={`schema-representation`}
                           value={template}
                           onChange={setTemplate}
@@ -292,12 +308,11 @@ export const MessageTemplateForm = forwardRef<MessageTemplateFormHandle, Message
                           style={{
                             resize: 'vertical',
                             overflow: 'auto',
-                            height: '480px',
-                            minHeight: '200px',
+                            minHeight: '240px',
                           }}
                           fontSize={14}
                           width="100%"
-                          height="480px"
+                          height="640px"
                           showPrintMargin={true}
                           showGutter={true}
                           highlightActiveLine={true}

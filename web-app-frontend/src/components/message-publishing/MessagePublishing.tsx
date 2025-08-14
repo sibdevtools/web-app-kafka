@@ -10,6 +10,7 @@ import '../../constant/ace.imports'
 import { MessagePublishedModal } from './MessagePublishedModal';
 import { getViewRepresentation, ViewType } from '../../utils/view';
 import { Base64, Loader, SettingsUtils, SuggestiveInput } from '@sibdevtools/frontend-common';
+import { IAceEditor } from 'react-ace/lib/types';
 
 interface HeaderForm {
   key: string | null;
@@ -174,6 +175,20 @@ const MessagePublishing: React.FC = () => {
     }
     const content = await getFileContent(file);
     setValue(Base64.Encoder.buffer2text(content));
+  };
+
+  const handleLoad = (editor: IAceEditor) => {
+    editor.commands.addCommand({
+      name: 'openSearch',
+      bindKey: { win: 'Ctrl-F', mac: 'Command-F' },
+      exec: (editor) => editor.execCommand('find'),
+    });
+
+    editor.commands.addCommand({
+      name: 'openReplace',
+      bindKey: { win: 'Ctrl-H', mac: 'Command-H' },
+      exec: (editor) => editor.execCommand('replace'),
+    });
   };
 
   return (
@@ -425,6 +440,7 @@ const MessagePublishing: React.FC = () => {
                         <AceEditor
                           mode={valueView === 'base64' ? 'text' : textTypeAceModeMap.get(valueType) ?? 'text'}
                           theme={settings['aceTheme']}
+                          onLoad={handleLoad}
                           name={`schema-representation`}
                           value={getViewRepresentation(valueView, value)}
                           onChange={changeValue}
@@ -432,12 +448,11 @@ const MessagePublishing: React.FC = () => {
                           style={{
                             resize: 'vertical',
                             overflow: 'auto',
-                            height: '480px',
-                            minHeight: '200px',
+                            minHeight: '240px',
                           }}
                           fontSize={14}
                           width="100%"
-                          height="480px"
+                          height="640px"
                           showPrintMargin={true}
                           showGutter={true}
                           highlightActiveLine={true}
