@@ -79,6 +79,7 @@ const MessageTemplates: React.FC = () => {
           <CustomTable
             table={{ responsive: true }}
             thead={{
+              tableId: 'web-app-kafka-message-templates',
               columns: {
                 code: {
                   label: 'Code',
