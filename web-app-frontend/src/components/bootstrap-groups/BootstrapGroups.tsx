@@ -102,6 +102,10 @@ const BootstrapGroups: React.FC = () => {
                   className: 'text-center'
                 }
               },
+              defaultSort: {
+                column: 'code',
+                direction: 'asc'
+              }
             }}
             tbody={{
               data: groups.map(group => {

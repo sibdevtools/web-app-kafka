@@ -152,6 +152,10 @@ export const MessageConsumingResult = forwardRef<MessageConsumingResultHandle, M
                 sortable: true,
                 filterable: true
               },
+            },
+            defaultSort: {
+              column: 'timestamp',
+              direction: 'asc'
             }
           }}
           tbody={{
